@@ -1,0 +1,17 @@
+{
+  "name": "abadiserver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "aris sugiarto",
+  "license": "ISC",
+  "dependencies": {
+    "mongodb": "^5.7.0",
+    "qrcode": "^1.5.3",
+    "socket.io": "^4.7.1"
+  }
+}
