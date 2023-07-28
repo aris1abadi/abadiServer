@@ -34,7 +34,11 @@ const ioServer = new Server({
  });
 
 process.nextTick(function () {
-	console.log("Server restart ",new Date())
+	console.log("Server restart ",new Date())   
+	loadMenu();
+	loadBahan();
+	loadPelanggan();
+	loadTransaksiJualCount();
 })
 
 ioServer.listen(3000);
