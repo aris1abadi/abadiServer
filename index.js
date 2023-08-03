@@ -156,7 +156,6 @@ async function loadMenu() {
 
 async function loadBahan() {
 	try {
-
 		// @ts-ignore
 		if (typeof dataBahan !== 'undefined' && dataBahan.length > 0) {
 			ioServer.emit('myBahan', dataBahan);
