@@ -139,22 +139,22 @@ ioServer.on("connection", (socket) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
 		const resp = simpanGambar(fileData)
-		callback({message:resp})
+		callback({ message: resp })
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
-		if(fileData.newMenu){
+		if (fileData.newMenu) {
 			//bikin id baru
-			let nId = (parseInt(dataMenu[dataMenu.length - 1].id.slice(1,3))) + 1;
+			let nId = (parseInt(dataMenu[dataMenu.length - 1].id.slice(1, 3))) + 1;
 			let newId = "M"
-			if(nId < 10)newId += "0"
+			if (nId < 10) newId += "0"
 			newId += String(nId)
-			console.log("newId: ",newId)
+			console.log("newId: ", newId)
 			fileData.dataMenu.id = newId
 
 			simpanMenu(fileData.dataMenu)
-		}else{
+		} else {
 			updateMenu(fileData.dataMenu)
 		}
-		
+
 	})
 
 	socket.on('bahan_upload', (fileData, callback) => {
@@ -164,22 +164,22 @@ ioServer.on("connection", (socket) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
 		const resp = simpanGambar(fileData)
-		callback({message:resp})
+		callback({ message: resp })
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
-		if(fileData.newBahan){
+		if (fileData.newBahan) {
 			//bikin id baru
-			let nId = (parseInt(dataBahan[dataBahan.length - 1].id.slice(1,3))) + 1;
+			let nId = (parseInt(dataBahan[dataBahan.length - 1].id.slice(1, 3))) + 1;
 			let newId = "B"
-			if(nId < 10)newId += "0"
+			if (nId < 10) newId += "0"
 			newId += String(nId)
-			console.log("newId: ",newId)
+			console.log("newId: ", newId)
 			fileData.dataBahan.id = newId
 
 			simpanBahan(fileData.dataBahan)
-		}else{
+		} else {
 			updateBahan(fileData.dataBahan)
 		}
-		
+
 	})
 
 	socket.on('pelanggan_upload', (fileData, callback) => {
@@ -189,28 +189,28 @@ ioServer.on("connection", (socket) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
 		const resp = simpanGambar(fileData)
-		callback({message:resp})
+		callback({ message: resp })
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
-		if(fileData.newPelanggan){
+		if (fileData.newPelanggan) {
 			//bikin id baru
 			let newId = "P" + fileData.dataPelanggan.telp
 			fileData.dataPelanggan.id = newId
 
 			simpanPelanggan(fileData.dataPelanggan)
-		}else{
+		} else {
 			updatePelanggan(fileData.dataPelanggan)
 		}
-		
+
 	})
 
 
 });
 
-async function simpanGambar(file){
+async function simpanGambar(file) {
 	//path.resolve('/home/abadi/abadipos50/static',file.name)
 	const dest = '/home/abadi/abadipos50/static/' + file.name
-	let outResp ={
-		pesan:"tes"
+	let outResp = {
+		pesan: "tes"
 	}
 
 	try {
@@ -219,13 +219,13 @@ async function simpanGambar(file){
 		outResp.pesan = "sukses"
 
 		return outResp
-	  } catch (err) {
+	} catch (err) {
 		console.log(err);
 		outResp.pesan = err
 		return outResp
-	  }
+	}
 
-	  
+
 }
 
 
@@ -516,27 +516,35 @@ async function simpanTransaksiJual(data) {
 		const tes = await db.collection('transaksiJual').insertOne(data);
 		//update stok
 		//console.log("Simpan transaksi jual ", JSON.stringify(data))
+		let newStok = 0
+		let newStokSama = 0
+		let st = {
+			id: '',
+			stokId: "",
+			newStok: 0
+		}
 
 		// @ts-ignore
 		data.item.itemDetil.forEach((itemDetil) => {
 			// @ts-ignore
+			newStok = 0
 			dataMenu.forEach((menu, index) => {
-				if (menu.stok !== -1) {
-					if (menu.id === itemDetil.id) {
-						//update stok
-
-						let st = {
-							id: menu.id,
-							stokId: menu.stokId,
-							newStok: (menu.stok - itemDetil.jml)
-						}
-						//console.log("updateStok: " + st.id + " newStok:" + st.newStok)
-						updateStok(st)
+				if (menu.stokId !== '-') {					
+					if (menu.stokId === itemDetil.stokId) {	
+						st.id = menu.id
+						st.stokId = menu.stokId		
+						st.newStok = (menu.stok - itemDetil.jml)
+						dataMenu[index].stok -= itemDetil.jml
+						console.log("updateStok: " + st.id + " newStok:" + st.newStok)	
+						updateStok(st)									
 					}
 				}
 			})
+			
+			
 		})
 
+		
 		//loadStok()
 		//update menu & stok
 		loadNewStok()
@@ -563,7 +571,7 @@ async function loadNewStok() {
 	}
 }
 
-async function simpanMenu(newData){
+async function simpanMenu(newData) {
 	try {
 		// @ts-ignore
 		const client = await clientPromise;
@@ -733,28 +741,28 @@ async function simpanPelanggan(dataPlg) {
 	}
 }
 
-async function updatePelanggan(newPelanggan){
+async function updatePelanggan(newPelanggan) {
 	try {
 		// @ts-ignore
 		const client = await clientPromise;
 		const db = client.db('abadipos');
-		
+
 		// @ts-ignore
 		const tes = await db.collection('dataPelanggan').updateOne(
 			{ id: newPelanggan.id },
 			{
 				$set: {
 
-					nama: newPelanggan.nama,					
+					nama: newPelanggan.nama,
 					telp: newPelanggan.telp,
 					alamat: newPelanggan.alamat,
-					map: newPelanggan.map,					
+					map: newPelanggan.map,
 					gambar: newPelanggan.gambar
 				}
 			}
 		);
 		//update stok disini
-		dataPelanggan=[]
+		dataPelanggan = []
 		loadPelanggan();
 		////
 	} catch (err) {
@@ -856,7 +864,9 @@ async function updateStok(newData) {
 	} catch (err) {
 		console.log(err);
 	}
-	loadMenu()
+	
+	
+
 }
 
 /*
@@ -873,7 +883,7 @@ waId: "-",
 
 */
 
-async function updateMenu(newData){
+async function updateMenu(newData) {
 	try {
 		// @ts-ignore
 		const client = await clientPromise;
@@ -895,7 +905,7 @@ async function updateMenu(newData){
 			}
 		);
 		//update stok disini
-		dataMenu=[]
+		dataMenu = []
 		loadMenu();
 		////
 	} catch (err) {
@@ -903,19 +913,19 @@ async function updateMenu(newData){
 	}
 }
 
-async function updateBahan(newData){
+async function updateBahan(newData) {
 	try {
 		// @ts-ignore
 		const client = await clientPromise;
 		const db = client.db('abadipos');
-		
+
 		// @ts-ignore
 		const tes = await db.collection('dataBahan').updateOne(
 			{ id: newData.id },
 			{
 				$set: {
 
-					nama: newData.nama,					
+					nama: newData.nama,
 					harga: newData.harga,
 					stokId: newData.stokId,
 					konversi: newData.konversi,
@@ -927,7 +937,7 @@ async function updateBahan(newData){
 			}
 		);
 		//update stok disini
-		dataBahan=[]
+		dataBahan = []
 		loadBahan();
 		////
 	} catch (err) {
