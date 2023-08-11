@@ -208,7 +208,7 @@ ioServer.on("connection", (socket) => {
 
 async function simpanGambar(file) {
 	//path.resolve('/home/abadi/abadipos50/static',file.name)
-	const dest = '/home/abadi/abadipos50/static/' + file.name
+	const dest = '/home/abadinet/abadipos50/static/' + file.name
 	let outResp = {
 		pesan: "tes"
 	}
