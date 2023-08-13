@@ -43,16 +43,64 @@ const ioServer = new Server({
 });
 
 process.nextTick(function () {
-	console.log("Server restart ", new Date())
+	console.log("Server restart ", timeNow())
 	loadMenu();
 	loadBahan();
 	loadPelanggan();
+	loadSuplier();
+	loadKategori()
 	loadTransaksiJualCount();
 })
 
 ioServer.listen(3300);
 
 ioServer.on("connection", (socket) => {
+
+	//load ketika client konek
+	if (typeof dataMenu !== 'undefined' && dataMenu.length > 0) {
+		ioServer.emit('myMenu', dataMenu);
+	}else{
+		loadMenu()
+	}
+	if (typeof dataBahan !== 'undefined' && dataBahan.length > 0) {
+		ioServer.emit('myBahan', dataBahan);
+	} else {
+		loadBahan()
+	}
+
+	if (typeof dataSuplier !== 'undefined' && dataSuplier.length > 0) {
+		ioServer.emit('mySuplier', dataSuplier);
+	} else {
+		loadSuplier()
+	}
+
+	if (typeof dataPelanggan !== 'undefined' && dataPelanggan.length > 0) {
+		ioServer.emit('myPelanggan', dataPelanggan);
+	} else {
+		loadPelanggan()
+	}
+
+	if (typeof dataKategori !== 'undefined' && dataKategori.length > 0) {
+		ioServer.emit('myKategori', dataKategori);
+	} else {
+		loadKategori()
+	}
+
+	if(transaksiBeliCountNow > 0){
+		//ioServer.emit('myTransaksiJualCount', transaksiJualCountNow);
+		ioServer.emit('myTransaksiBeliCount', transaksiBeliCountNow);
+	}else{
+		loadTransaksiJualCount()
+	}
+
+	if(transaksiJualCountNow > 0){
+		//ioServer.emit('myTransaksiJualCount', transaksiJualCountNow);
+		ioServer.emit('myTransaksiBeliCount', transaksiBeliCountNow);
+	}else{
+		loadTransaksiJualCount()
+	}
+
+
 	socket.on('fromClient', (msg) => {
 		//console.log('ini dari client: ' + msg)
 		if (msg === 'getMenu') {
@@ -206,6 +254,16 @@ ioServer.on("connection", (socket) => {
 
 });
 
+function timeNow(){    
+	const today =new Date(Date.now());
+	let tm = today.toLocaleDateString('en-GB') ; // "14/6/2020 15:57:36" 
+		tm += " "
+		tm += today.toLocaleTimeString('en-GB'); // ""
+	return tm
+}
+
+
+
 async function simpanGambar(file) {
 	//path.resolve('/home/abadi/abadipos50/static',file.name)
 	const dest = '/home/abadinet/abadipos50/static/' + file.name
@@ -237,9 +295,7 @@ function getTanggal(tm) {
 async function loadMenu() {
 	try {
 		// @ts-ignore
-		if (typeof dataMenu !== 'undefined' && dataMenu.length > 0) {
-			ioServer.emit('myMenu', dataMenu);
-		} else {
+	
 			// @ts-ignore
 			const client = await clientPromise;
 			const db = client.db('abadipos');
@@ -250,7 +306,7 @@ async function loadMenu() {
 				//console.log("load_dataMenu",dataMenu)
 				ioServer.emit('myMenu', dta);
 			}
-		}
+		
 		//
 	} catch (err) {
 		console.log(err);
@@ -259,9 +315,7 @@ async function loadMenu() {
 async function loadKategori() {
 	try {
 		// @ts-ignore
-		if (typeof dataKategori !== 'undefined' && dataKategori.length > 0) {
-			ioServer.emit('myKategori', dataKategori);
-		} else {
+		
 			// @ts-ignore
 			const client = await clientPromise;
 			const db = client.db('abadipos');
@@ -272,7 +326,7 @@ async function loadKategori() {
 				//console.log("load_dataMenu",dataMenu)
 				ioServer.emit('myKategori', dta);
 			}
-		}
+		
 		//
 	} catch (err) {
 		console.log(err);
@@ -281,9 +335,7 @@ async function loadKategori() {
 async function loadBahan() {
 	try {
 		// @ts-ignore
-		if (typeof dataBahan !== 'undefined' && dataBahan.length > 0) {
-			ioServer.emit('myBahan', dataBahan);
-		} else {
+		
 			// @ts-ignore
 			const client = await clientPromise;
 			const db = client.db('abadipos');
@@ -294,7 +346,7 @@ async function loadBahan() {
 				dataBahan = dta
 				ioServer.emit('myBahan', dta);
 			}
-		}
+		
 
 		//
 	} catch (err) {
@@ -621,16 +673,21 @@ async function updateStokBahan(newData) {
 		// @ts-ignore
 		dataMenu.forEach((menu, index) => {
 			if (item.stokId === menu.stokId) {
+				
 				let st = {
 					id: menu.id,
 					stokId: menu.stokId,
-					newStok: (menu.stok + (item.jml * item.isi))
+					newStok: (menu.stok + (item.jml * item.konversi))
 				}
+				dataMenu[index].stok += (item.jml * item.konversi)
 				//console.log("updateStok: " + st.id + " newStok:" + st.newStok)
 				updateStok(st)
+				
+				
 			}
 		})
 	})
+	loadNewStok()
 }
 
 // @ts-ignore
