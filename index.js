@@ -186,7 +186,7 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		if (fileData.dataPelanggan.gambar !== 'logo2023.png') {
+		if (fileData.dataMenu.gambar !== 'logo2023.png') {
 			const resp = simpanGambar(fileData)
 			callback({ message: resp })
 		}else{
@@ -216,7 +216,7 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		if (fileData.dataPelanggan.gambar !== 'logo2023.png') {
+		if (fileData.dataBahan.gambar !== 'logo2023.png') {
 			const resp = simpanGambar(fileData)
 			callback({ message: resp })
 		}else{
