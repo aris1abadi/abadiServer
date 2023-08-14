@@ -59,7 +59,7 @@ ioServer.on("connection", (socket) => {
 	//load ketika client konek
 	if (typeof dataMenu !== 'undefined' && dataMenu.length > 0) {
 		ioServer.emit('myMenu', dataMenu);
-	}else{
+	} else {
 		loadMenu()
 	}
 	if (typeof dataBahan !== 'undefined' && dataBahan.length > 0) {
@@ -86,17 +86,17 @@ ioServer.on("connection", (socket) => {
 		loadKategori()
 	}
 
-	if(transaksiBeliCountNow > 0){
+	if (transaksiBeliCountNow > 0) {
 		//ioServer.emit('myTransaksiJualCount', transaksiJualCountNow);
 		ioServer.emit('myTransaksiBeliCount', transaksiBeliCountNow);
-	}else{
+	} else {
 		loadTransaksiJualCount()
 	}
 
-	if(transaksiJualCountNow > 0){
+	if (transaksiJualCountNow > 0) {
 		//ioServer.emit('myTransaksiJualCount', transaksiJualCountNow);
 		ioServer.emit('myTransaksiBeliCount', transaksiBeliCountNow);
-	}else{
+	} else {
 		loadTransaksiJualCount()
 	}
 
@@ -186,8 +186,13 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		const resp = simpanGambar(fileData)
-		callback({ message: resp })
+		if (fileData.dataPelanggan.gambar !== 'logo2023.png') {
+			const resp = simpanGambar(fileData)
+			callback({ message: resp })
+		}else{
+			callback({message:"default gambar"})
+			console.log("default gambar")
+		}
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
 		if (fileData.newMenu) {
 			//bikin id baru
@@ -211,8 +216,13 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		const resp = simpanGambar(fileData)
-		callback({ message: resp })
+		if (fileData.dataPelanggan.gambar !== 'logo2023.png') {
+			const resp = simpanGambar(fileData)
+			callback({ message: resp })
+		}else{
+			callback({message:"default gambar"})
+			console.log("default gambar")
+		}
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
 		if (fileData.newBahan) {
 			//bikin id baru
@@ -236,8 +246,13 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		const resp = simpanGambar(fileData)
-		callback({ message: resp })
+		if (fileData.dataPelanggan.gambar !== 'logo2023.png') {
+			const resp = simpanGambar(fileData)
+			callback({ message: resp })
+		}else{
+			callback({message:"default gambar"})
+			console.log("default gambar")
+		}
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
 		if (fileData.newPelanggan) {
 			//bikin id baru
@@ -254,11 +269,11 @@ ioServer.on("connection", (socket) => {
 
 });
 
-function timeNow(){    
-	const today =new Date(Date.now());
-	let tm = today.toLocaleDateString('en-GB') ; // "14/6/2020 15:57:36" 
-		tm += " "
-		tm += today.toLocaleTimeString('en-GB'); // ""
+function timeNow() {
+	const today = new Date(Date.now());
+	let tm = today.toLocaleDateString('en-GB'); // "14/6/2020 15:57:36" 
+	tm += " "
+	tm += today.toLocaleTimeString('en-GB'); // ""
 	return tm
 }
 
@@ -295,18 +310,18 @@ function getTanggal(tm) {
 async function loadMenu() {
 	try {
 		// @ts-ignore
-	
-			// @ts-ignore
-			const client = await clientPromise;
-			const db = client.db('abadipos');
 
-			dta = await db.collection('dataMenu').find().toArray();
-			if (dta) {
-				dataMenu = dta;
-				//console.log("load_dataMenu",dataMenu)
-				ioServer.emit('myMenu', dta);
-			}
-		
+		// @ts-ignore
+		const client = await clientPromise;
+		const db = client.db('abadipos');
+
+		dta = await db.collection('dataMenu').find().toArray();
+		if (dta) {
+			dataMenu = dta;
+			//console.log("load_dataMenu",dataMenu)
+			ioServer.emit('myMenu', dta);
+		}
+
 		//
 	} catch (err) {
 		console.log(err);
@@ -315,18 +330,18 @@ async function loadMenu() {
 async function loadKategori() {
 	try {
 		// @ts-ignore
-		
-			// @ts-ignore
-			const client = await clientPromise;
-			const db = client.db('abadipos');
 
-			dta = await db.collection('dataKategori').find().toArray();
-			if (dta) {
-				dataKategori = dta;
-				//console.log("load_dataMenu",dataMenu)
-				ioServer.emit('myKategori', dta);
-			}
-		
+		// @ts-ignore
+		const client = await clientPromise;
+		const db = client.db('abadipos');
+
+		dta = await db.collection('dataKategori').find().toArray();
+		if (dta) {
+			dataKategori = dta;
+			//console.log("load_dataMenu",dataMenu)
+			ioServer.emit('myKategori', dta);
+		}
+
 		//
 	} catch (err) {
 		console.log(err);
@@ -335,18 +350,18 @@ async function loadKategori() {
 async function loadBahan() {
 	try {
 		// @ts-ignore
-		
-			// @ts-ignore
-			const client = await clientPromise;
-			const db = client.db('abadipos');
 
-			dta = await db.collection('dataBahan').find().toArray();
+		// @ts-ignore
+		const client = await clientPromise;
+		const db = client.db('abadipos');
 
-			if (dta) {
-				dataBahan = dta
-				ioServer.emit('myBahan', dta);
-			}
-		
+		dta = await db.collection('dataBahan').find().toArray();
+
+		if (dta) {
+			dataBahan = dta
+			ioServer.emit('myBahan', dta);
+		}
+
 
 		//
 	} catch (err) {
@@ -581,22 +596,22 @@ async function simpanTransaksiJual(data) {
 			// @ts-ignore
 			newStok = 0
 			dataMenu.forEach((menu, index) => {
-				if (menu.stokId !== '-') {					
-					if (menu.stokId === itemDetil.stokId) {	
+				if (menu.stokId !== '-') {
+					if (menu.stokId === itemDetil.stokId) {
 						st.id = menu.id
-						st.stokId = menu.stokId		
+						st.stokId = menu.stokId
 						st.newStok = (menu.stok - itemDetil.jml)
 						dataMenu[index].stok -= itemDetil.jml
-						console.log("updateStok: " + st.id + " newStok:" + st.newStok)	
-						updateStok(st)									
+						console.log("updateStok: " + st.id + " newStok:" + st.newStok)
+						updateStok(st)
 					}
 				}
 			})
-			
-			
+
+
 		})
 
-		
+
 		//loadStok()
 		//update menu & stok
 		loadNewStok()
@@ -673,7 +688,7 @@ async function updateStokBahan(newData) {
 		// @ts-ignore
 		dataMenu.forEach((menu, index) => {
 			if (item.stokId === menu.stokId) {
-				
+
 				let st = {
 					id: menu.id,
 					stokId: menu.stokId,
@@ -682,8 +697,8 @@ async function updateStokBahan(newData) {
 				dataMenu[index].stok += (item.jml * item.konversi)
 				//console.log("updateStok: " + st.id + " newStok:" + st.newStok)
 				updateStok(st)
-				
-				
+
+
 			}
 		})
 	})
@@ -921,8 +936,8 @@ async function updateStok(newData) {
 	} catch (err) {
 		console.log(err);
 	}
-	
-	
+
+
 
 }
 
