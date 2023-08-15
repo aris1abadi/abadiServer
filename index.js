@@ -186,7 +186,7 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		if (fileData.dataMenu.gambar !== 'logo2023.png') {
+		if ((fileData.dataMenu.gambar !== 'logo2023.png') || (fileData.dataMenu.gambar !== dataMenu.gambar)) {
 			const resp = simpanGambar(fileData)
 			callback({ message: resp })
 		}else{
@@ -216,7 +216,7 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		if (fileData.dataBahan.gambar !== 'logo2023.png') {
+		if ((fileData.dataBahan.gambar !== 'logo2023.png') || (fileData.dataBahan.gambar !== dataBahan.gambar)) {
 			const resp = simpanGambar(fileData)
 			callback({ message: resp })
 		}else{
@@ -246,7 +246,7 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		if (fileData.dataPelanggan.gambar !== 'logo2023.png') {
+		if ((fileData.dataPelanggan.gambar !== 'logo2023.png') || (fileData.dataPelanggan.gambar !== dataPelanggan.gambar)) {
 			const resp = simpanGambar(fileData)
 			callback({ message: resp })
 		}else{
@@ -271,9 +271,9 @@ ioServer.on("connection", (socket) => {
 
 function timeNow() {
 	const today = new Date(Date.now());
-	let tm = today.toLocaleDateString('en-GB'); // "14/6/2020 15:57:36" 
+	let tm = today.toLocaleDateString('id-ID'); // "14/6/2020 15:57:36" 
 	tm += " "
-	tm += today.toLocaleTimeString('en-GB'); // ""
+	tm += today.toLocaleTimeString('id-ID'); // ""
 	return tm
 }
 
@@ -304,7 +304,7 @@ async function simpanGambar(file) {
 
 function getTanggal(tm) {
 	const today = new Date(tm);
-	return today.toLocaleDateString('en-GB'); // "14/6/2020"
+	return today.toLocaleDateString('id-ID'); // "14/6/2020"
 }
 
 async function loadMenu() {
@@ -520,7 +520,7 @@ async function loadTransaksiJualCount() {
 		dta = await db.collection('transaksiCount').find().toArray();
 		const timeElapsed = Date.now();
 		const today = new Date(timeElapsed);
-		const tc = today.toLocaleDateString('en-GB'); // "14/6/2020"
+		const tc = today.toLocaleDateString('id-ID'); // "14/6/2020"
 		//console.log(dta[0])
 		//console.log("timedb",dta[0].timeCode)
 		//console.log("timeNow" ,tc)
@@ -970,6 +970,7 @@ async function updateMenu(newData) {
 					nama: newData.nama,
 					waId: newData.waId,
 					harga: newData.harga,
+					hargaGojeg: newData.hargaGojeg,
 					stokId: newData.stokId,
 					kategori: newData.kategori,
 					gambar: newData.gambar
