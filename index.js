@@ -194,7 +194,7 @@ ioServer.on("connection", (socket) => {
 			console.log("default gambar")
 		}
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
-		if (fileData.newMenu) {
+		if (fileData.newMenu === true) {
 			//bikin id baru
 			let nId = (parseInt(dataMenu[dataMenu.length - 1].id.slice(1, 3))) + 1;
 			let newId = "M"
@@ -204,8 +204,10 @@ ioServer.on("connection", (socket) => {
 			fileData.dataMenu.id = newId
 
 			simpanMenu(fileData.dataMenu)
+			console.log("simpan menu ",fileData.dataMenu)
 		} else {
 			updateMenu(fileData.dataMenu)
+			console.log("update menu ",fileData.dataMenu)
 		}
 
 	})
@@ -234,8 +236,10 @@ ioServer.on("connection", (socket) => {
 			fileData.dataBahan.id = newId
 
 			simpanBahan(fileData.dataBahan)
+			console.log("simpan bahan ",fileData.dataBahan)
 		} else {
 			updateBahan(fileData.dataBahan)
+			console.log("update bahan ",fileData.dataBahan)
 		}
 
 	})
@@ -249,6 +253,7 @@ ioServer.on("connection", (socket) => {
 		if ((fileData.dataPelanggan.gambar !== 'logo2023.png') || (fileData.dataPelanggan.gambar !== dataPelanggan.gambar)) {
 			const resp = simpanGambar(fileData)
 			callback({ message: resp })
+
 		}else{
 			callback({message:"default gambar"})
 			console.log("default gambar")
@@ -271,30 +276,29 @@ ioServer.on("connection", (socket) => {
 
 function timeNow() {
 	const today = new Date(Date.now());
-	let tm = today.toLocaleDateString('id-ID'); // "14/6/2020 15:57:36" 
+	let tm = today.toLocaleDateString('id-ID',{"timeZone":"Asia/jakarta"}); // "14/6/2020 15:57:36" 
 	tm += " "
-	tm += today.toLocaleTimeString('id-ID'); // ""
+	tm += today.toLocaleTimeString('id-ID',{"timeZone":"Asia/jakarta"}); // ""
 	return tm
 }
 
 
 
 async function simpanGambar(file) {
+	//console.log("simpan gambar ", file.name)
 	//path.resolve('/home/abadi/abadipos50/static',file.name)
-	const dest = '/home/abadinet/abadipos50/static/' + file.name
-	let outResp = {
-		pesan: "tes"
-	}
-
+	//const dest = '/home/abadinet/abadipos50/static/' + file.name
+	const dest = '/home/abadi/abadipos50/static/' + file.name
+	let outResp = "-"
 	try {
 		const content = file.data0;
 		await fs.writeFile(dest, content);
-		outResp.pesan = "sukses"
+		outResp = "sukses"
 
 		return outResp
 	} catch (err) {
 		console.log(err);
-		outResp.pesan = err
+		outResp = err
 		return outResp
 	}
 
@@ -304,7 +308,7 @@ async function simpanGambar(file) {
 
 function getTanggal(tm) {
 	const today = new Date(tm);
-	return today.toLocaleDateString('id-ID'); // "14/6/2020"
+	return today.toLocaleDateString('id-ID',{"timeZone":"Asia/jakarta"}); // "14/6/2020"
 }
 
 async function loadMenu() {
@@ -470,7 +474,7 @@ async function loadTransaksiBeli() {
 
 function getTimeNow() {
 	const d = new Date();
-	const text = d.toDateString();
+	const text = d.toLocaleDateString('id-ID',{"timeZone":"Asia/jakarta"})
 	const h = new Date(text)
 	return h.getTime()
 }
@@ -833,6 +837,7 @@ async function updatePelanggan(newPelanggan) {
 				}
 			}
 		);
+		console.log("simpan pelanggan ",newPelanggan)
 		//update stok disini
 		dataPelanggan = []
 		loadPelanggan();
@@ -1004,6 +1009,8 @@ async function updateBahan(newData) {
 					konversi: newData.konversi,
 					satuanBeli: newData.satuanBeli,
 					satuanPakai: newData.satuanPakai,
+					kategori: newData.kategori,
+					suplier: newData.suplier,
 					kategori: newData.kategori,
 					gambar: newData.gambar
 				}
