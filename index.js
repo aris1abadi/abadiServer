@@ -8,6 +8,12 @@ import path from "path"
 //import pkg from 'multer';
 //const { multer } = pkg;
 
+//local
+let pathGambar = "/home/oem/abadipos/abadipos50/static/public/"
+
+//lesehanpundong
+//const pathGambar = "/home/abadinet/abadipos50/static/public/"
+
 
 const uri = 'mongodb://localhost:27017';
 const options = {
@@ -187,10 +193,10 @@ ioServer.on("connection", (socket) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
 		if ((fileData.dataMenu.gambar !== 'logo2023.png') || (fileData.dataMenu.gambar !== dataMenu.gambar)) {
-			const resp = simpanGambar(fileData)
+			let resp = simpanGambar(fileData)
 			callback({ message: resp })
-		}else{
-			callback({message:"default gambar"})
+		} else {
+			callback({ message: "default gambar" })
 			console.log("default gambar")
 		}
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
@@ -204,10 +210,10 @@ ioServer.on("connection", (socket) => {
 			fileData.dataMenu.id = newId
 
 			simpanMenu(fileData.dataMenu)
-			console.log("simpan menu ",fileData.dataMenu)
+			console.log("simpan menu ", fileData.dataMenu)
 		} else {
 			updateMenu(fileData.dataMenu)
-			console.log("update menu ",fileData.dataMenu)
+			console.log("update menu ", fileData.dataMenu)
 		}
 
 	})
@@ -219,10 +225,10 @@ ioServer.on("connection", (socket) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
 		if ((fileData.dataBahan.gambar !== 'logo2023.png') || (fileData.dataBahan.gambar !== dataBahan.gambar)) {
-			const resp = simpanGambar(fileData)
+			let resp = simpanGambar(fileData)
 			callback({ message: resp })
-		}else{
-			callback({message:"default gambar"})
+		} else {
+			callback({ message: "default gambar" })
 			console.log("default gambar")
 		}
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
@@ -236,10 +242,10 @@ ioServer.on("connection", (socket) => {
 			fileData.dataBahan.id = newId
 
 			simpanBahan(fileData.dataBahan)
-			console.log("simpan bahan ",fileData.dataBahan)
+			console.log("simpan bahan ", fileData.dataBahan)
 		} else {
 			updateBahan(fileData.dataBahan)
-			console.log("update bahan ",fileData.dataBahan)
+			console.log("update bahan ", fileData.dataBahan)
 		}
 
 	})
@@ -251,11 +257,11 @@ ioServer.on("connection", (socket) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
 		if ((fileData.dataPelanggan.gambar !== 'logo2023.png') || (fileData.dataPelanggan.gambar !== dataPelanggan.gambar)) {
-			const resp = simpanGambar(fileData)
+			let resp = simpanGambar(fileData)
 			callback({ message: resp })
 
-		}else{
-			callback({message:"default gambar"})
+		} else {
+			callback({ message: "default gambar" })
 			console.log("default gambar")
 		}
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
@@ -271,14 +277,41 @@ ioServer.on("connection", (socket) => {
 
 	})
 
+	socket.on('suplier_upload', (fileData, callback) => {
+		//console.log('File received:', fileData);		
+		// Here, you can process the received file data as per your requirements.
+		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
+		//	callback({ message: err ? "failure" : "success" });
+		//});
+		if ((fileData.dataSuplier.gambar !== 'logo2023.png') || (fileData.dataSuplier.gambar !== dataSuplier.gambar)) {
+			let resp = simpanGambar(fileData)
+			callback({ message: resp })
+
+		} else {
+			callback({ message: "default gambar" })
+			console.log("default gambar")
+		}
+		//const fileBuffer = Buffer.from(fileData.data, 'base64');
+		if (fileData.newSuplier) {
+			//bikin id baru
+			let newId = "S" + fileData.dataSuplier.telp
+			fileData.dataSuplier.id = newId
+
+			simpanSuplier(fileData.dataSuplier)
+		} else {
+			updateSuplier(fileData.dataSuplier)
+		}
+
+	})
+
 
 });
 
 function timeNow() {
 	const today = new Date(Date.now());
-	let tm = today.toLocaleDateString('id-ID',{"timeZone":"Asia/jakarta"}); // "14/6/2020 15:57:36" 
+	let tm = today.toLocaleDateString('id-ID', { "timeZone": "Asia/jakarta" }); // "14/6/2020 15:57:36" 
 	tm += " "
-	tm += today.toLocaleTimeString('id-ID',{"timeZone":"Asia/jakarta"}); // ""
+	tm += today.toLocaleTimeString('id-ID', { "timeZone": "Asia/jakarta" }); // ""
 	return tm
 }
 
@@ -288,11 +321,12 @@ async function simpanGambar(file) {
 	//console.log("simpan gambar ", file.name)
 	//path.resolve('/home/abadi/abadipos50/static',file.name)
 	//const dest = '/home/abadinet/abadipos50/static/' + file.name
-	const dest = '/home/abadi/abadipos50/static/' + file.name
+
+	let gambarLok = pathGambar + file.name
 	let outResp = "-"
 	try {
 		const content = file.data0;
-		await fs.writeFile(dest, content);
+		await fs.writeFile(gambarLok, content);
 		outResp = "sukses"
 
 		return outResp
@@ -308,7 +342,7 @@ async function simpanGambar(file) {
 
 function getTanggal(tm) {
 	const today = new Date(tm);
-	return today.toLocaleDateString('id-ID',{"timeZone":"Asia/jakarta"}); // "14/6/2020"
+	return today.toLocaleDateString('id-ID', { "timeZone": "Asia/jakarta" }); // "14/6/2020"
 }
 
 async function loadMenu() {
@@ -474,7 +508,7 @@ async function loadTransaksiBeli() {
 
 function getTimeNow() {
 	const d = new Date();
-	const text = d.toLocaleDateString('id-ID',{"timeZone":"Asia/jakarta"})
+	const text = d.toLocaleDateString('id-ID', { "timeZone": "Asia/jakarta" })
 	const h = new Date(text)
 	return h.getTime()
 }
@@ -837,10 +871,56 @@ async function updatePelanggan(newPelanggan) {
 				}
 			}
 		);
-		console.log("simpan pelanggan ",newPelanggan)
+		console.log("simpan pelanggan ", newPelanggan)
 		//update stok disini
 		dataPelanggan = []
 		loadPelanggan();
+		////
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+// @ts-ignore
+async function simpanSuplier(dataSp) {
+	try {
+		// @ts-ignore
+		const client = await clientPromise;
+		const db = client.db('abadipos');
+		//const collection = db.collection('dataTransaksijual')
+		// @ts-ignore
+		const tes = await db.collection('dataSuplier').insertOne(dataSp);
+		loadSuplier();
+		////
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+async function updateSuplier(newSuplier) {
+	try {
+		// @ts-ignore
+		const client = await clientPromise;
+		const db = client.db('abadipos');
+
+		// @ts-ignore
+		const tes = await db.collection('dataSuplier').updateOne(
+			{ id: newSuplier.id },
+			{
+				$set: {
+
+					nama: newSuplier.nama,
+					telp: newSuplier.telp,
+					alamat: newSuplier.alamat,
+					map: newSuplier.map,
+					gambar: newSuplier.gambar
+				}
+			}
+		);
+		console.log("simpan Suplier ", newSuplier)
+		//update stok disini
+		dataSuplier = []
+		loadSuplier();
 		////
 	} catch (err) {
 		console.log(err);
@@ -978,7 +1058,9 @@ async function updateMenu(newData) {
 					hargaGojeg: newData.hargaGojeg,
 					stokId: newData.stokId,
 					kategori: newData.kategori,
-					gambar: newData.gambar
+					gambar: newData.gambar,
+					dapur: newData.dapur
+
 				}
 			}
 		);
