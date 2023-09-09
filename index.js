@@ -9,10 +9,10 @@ import path from "path"
 //const { multer } = pkg;
 
 //local
-let pathGambar = "/home/oem/abadipos/abadipos50/static/public/"
+//let pathGambar = "/home/oem/abadipos/abadipos50/static/public/"
 
 //lesehanpundong
-//const pathGambar = "/home/abadinet/abadipos50/static/public/"
+let pathGambar = "/home/abadinet/abadipos50/static/public/"
 
 
 const uri = 'mongodb://localhost:27017';
