@@ -54,7 +54,7 @@ process.nextTick(function () {
 	loadBahan();
 	loadPelanggan();
 	loadSuplier();
-	loadKategori()
+	loadKategori();
 	loadTransaksiJualCount();
 })
 
@@ -302,6 +302,11 @@ ioServer.on("connection", (socket) => {
 			updateSuplier(fileData.dataSuplier)
 		}
 
+	})
+
+	socket.on("antrianChange", (msg) => {
+		//console.log(msg)
+		updateItemReady(msg);
 	})
 
 
@@ -795,6 +800,63 @@ async function updateTransaksiJual(data) {
 	} catch (err) {
 		console.log(err);
 	}
+}
+
+async function updateItemReady(newData) {
+	//load data item
+	try {
+		const client = await clientPromise;
+		const db = client.db('abadipos');
+
+		dta = await db.collection('transaksiJual').find({ id: newData.id }).toArray();
+		//console.log(dta)
+
+		newData.item.forEach((item) => {
+			dta[0].item.itemDetil.forEach((dtaItem, index) => {
+				if (dtaItem.id === item.id) {
+					dta[0].item.itemDetil[index].isReady = item.isReady
+				}
+			})
+		})
+		//console.log("tes selesai")
+
+		const tes = await db.collection('transaksiJual').updateOne(
+			{ id: newData.id },
+			{
+				$set: {
+					item: dta[0].item
+				}
+			}
+		)
+
+		//update status  disini
+		ioServer.emit("UpdateItemChange", newData)
+
+
+	} catch (err) {
+		console.log(err);
+	}
+
+	//try {
+	// @ts-ignore
+	//const client = await clientPromise;
+	//const db = client.db('abadipos');
+
+	// @ts-ignore
+	//const tes = await db.collection('transaksiJual').updateOne(
+	//	{ id: newData.id },
+	//	{
+	//		$set: {					
+	//			item: data.item
+	//		}
+	//	}
+	//);
+	//update status  disini
+	///	ioServer.emit("UpdateItemChange", newData)
+	////
+	//} catch (err) {
+	//	console.log(err);
+	//}
 }
 
 // @ts-ignore
