@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import { MongoClient } from 'mongodb';
 import fs from "fs/promises"
 import path from "path"
+import { writeFile } from "fs";
 //import Multer from "multer"
 //import pkgp from "path"
 //const { path } = pkgp
@@ -186,6 +187,15 @@ ioServer.on("connection", (socket) => {
 		});
 	})
 
+	socket.on("save_image",(file, callback) => {
+		console.log(file); // <Buffer 25 50 44 ...>
+	
+		// save the content to the disk, for example
+		writeFile(pathGambar, file, (err) => {
+		  callback({ message: err ? "failure" : "success" });
+		});
+	  });
+
 	socket.on('menu_upload', (fileData, callback) => {
 		//console.log('File received:', fileData);		
 		// Here, you can process the received file data as per your requirements.
@@ -331,13 +341,13 @@ async function simpanGambar(file) {
 	let outResp = "-"
 	try {
 		const content = file.data0;
-		await fs.writeFile(gambarLok, content);
-		outResp = "sukses"
+		await fs.writeFile(gambarLok, content)
+		outResp = "Sukses"			
 
 		return outResp
 	} catch (err) {
 		console.log(err);
-		outResp = err
+		outResp = "Gagal"
 		return outResp
 	}
 
