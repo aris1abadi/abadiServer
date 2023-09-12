@@ -241,7 +241,7 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		if ((fileData.dataMenu.gambar !== 'logo2023.png') || (fileData.dataMenu.gambar !== dataMenu.gambar)) {
+		if ((fileData.dataBahan.gambar !== 'logo2023.png') || (fileData.dataBahan.gambar !== dataBahan.gambar)) {
 			simpanGambar(fileData)			
 	   } else {			
 		   console.log("default gambar")
@@ -271,7 +271,7 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		if ((fileData.dataMenu.gambar !== 'logo2023.png') || (fileData.dataMenu.gambar !== dataMenu.gambar)) {
+		if ((fileData.dataPelanggan.gambar !== 'logo2023.png') || (fileData.dataPelanggan.gambar !== dataPelanggan.gambar)) {
 			simpanGambar(fileData)			
 	   } else {			
 		   console.log("default gambar")
@@ -295,7 +295,7 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		if ((fileData.dataMenu.gambar !== 'logo2023.png') || (fileData.dataMenu.gambar !== dataMenu.gambar)) {
+		if ((fileData.dataSuplier.gambar !== 'logo2023.png') || (fileData.dataSuplier.gambar !== dataSuplier.gambar)) {
 			simpanGambar(fileData)			
 	   } else {			
 		   console.log("default gambar")
