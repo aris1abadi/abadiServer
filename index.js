@@ -1,8 +1,9 @@
 import { Server } from "socket.io";
 import { MongoClient } from 'mongodb';
-import fs from "fs/promises"
-import path from "path"
-import { writeFile } from "fs";
+//import fs from "fs/promises"
+import { promises as fs } from 'fs';
+//import path from "path"
+//import { writeFile } from "fs";
 //import Multer from "multer"
 //import pkgp from "path"
 //const { path } = pkgp
@@ -13,7 +14,7 @@ import { writeFile } from "fs";
 //let pathGambar = "/home/oem/abadipos/abadipos50/static/public/"
 
 //lesehanpundong
-let pathGambar = "/home/abadinet/abadipos50/static/public/"
+let pathGambar = "/home/abadinet/abadipos50/build/client/public/"
 
 
 const uri = 'mongodb://localhost:27017';
@@ -187,26 +188,31 @@ ioServer.on("connection", (socket) => {
 		});
 	})
 
-	socket.on("save_image",(file, callback) => {
-		console.log(file); // <Buffer 25 50 44 ...>
-	
-		// save the content to the disk, for example
-		writeFile(pathGambar, file, (err) => {
-		  callback({ message: err ? "failure" : "success" });
-		});
-	  });
+	socket.on("save_image", async (file, callback) => {
+		let gambarLok = pathGambar + file.name
+		let outResp = "-"
+		try {
+			const content = file.data0;
+			await fs.writeFile(gambarLok, file)
+			outResp = "Sukses"
 
-	socket.on('menu_upload', (fileData, callback) => {
+			return outResp
+		} catch (err) {
+			console.log(err);
+			outResp = "Gagal"
+			return outResp
+		}
+	});
+
+	socket.on('menu_upload', (fileData) => {
 		//console.log('File received:', fileData);		
 		// Here, you can process the received file data as per your requirements.
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
 		if ((fileData.dataMenu.gambar !== 'logo2023.png') || (fileData.dataMenu.gambar !== dataMenu.gambar)) {
-			let resp = simpanGambar(fileData)
-			callback({ message: resp })
-		} else {
-			callback({ message: "default gambar" })
+			 simpanGambar(fileData)			
+		} else {			
 			console.log("default gambar")
 		}
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
@@ -234,13 +240,11 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		if ((fileData.dataBahan.gambar !== 'logo2023.png') || (fileData.dataBahan.gambar !== dataBahan.gambar)) {
-			let resp = simpanGambar(fileData)
-			callback({ message: resp })
-		} else {
-			callback({ message: "default gambar" })
-			console.log("default gambar")
-		}
+		if ((fileData.dataMenu.gambar !== 'logo2023.png') || (fileData.dataMenu.gambar !== dataMenu.gambar)) {
+			simpanGambar(fileData)			
+	   } else {			
+		   console.log("default gambar")
+	   }
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
 		if (fileData.newBahan) {
 			//bikin id baru
@@ -266,14 +270,11 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		if ((fileData.dataPelanggan.gambar !== 'logo2023.png') || (fileData.dataPelanggan.gambar !== dataPelanggan.gambar)) {
-			let resp = simpanGambar(fileData)
-			callback({ message: resp })
-
-		} else {
-			callback({ message: "default gambar" })
-			console.log("default gambar")
-		}
+		if ((fileData.dataMenu.gambar !== 'logo2023.png') || (fileData.dataMenu.gambar !== dataMenu.gambar)) {
+			simpanGambar(fileData)			
+	   } else {			
+		   console.log("default gambar")
+	   }
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
 		if (fileData.newPelanggan) {
 			//bikin id baru
@@ -293,14 +294,11 @@ ioServer.on("connection", (socket) => {
 		//writeFile("/home/abadi/abadipos50/static", fileData.data, (err) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
-		if ((fileData.dataSuplier.gambar !== 'logo2023.png') || (fileData.dataSuplier.gambar !== dataSuplier.gambar)) {
-			let resp = simpanGambar(fileData)
-			callback({ message: resp })
-
-		} else {
-			callback({ message: "default gambar" })
-			console.log("default gambar")
-		}
+		if ((fileData.dataMenu.gambar !== 'logo2023.png') || (fileData.dataMenu.gambar !== dataMenu.gambar)) {
+			simpanGambar(fileData)			
+	   } else {			
+		   console.log("default gambar")
+	   }
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
 		if (fileData.newSuplier) {
 			//bikin id baru
@@ -338,17 +336,18 @@ async function simpanGambar(file) {
 	//const dest = '/home/abadinet/abadipos50/static/' + file.name
 
 	let gambarLok = pathGambar + file.name
-	let outResp = "-"
+	//let outResp = "-"
 	try {
 		const content = file.data0;
 		await fs.writeFile(gambarLok, content)
-		outResp = "Sukses"			
-
-		return outResp
+		//outResp = "Sukses"
+		ioServer.emit("save_Status","sukses")
+		//return outResp
 	} catch (err) {
 		console.log(err);
-		outResp = "Gagal"
-		return outResp
+		//outResp = "Gagal"
+		ioServer.emit("save_Status","gagal")
+		//return outResp
 	}
 
 
