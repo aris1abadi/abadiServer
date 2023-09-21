@@ -48,7 +48,7 @@ const port = 2000
 const aedes = new Aedes()
 const mqttBroker = createServer(aedes.handle)
 
-mqttBroker.listen(port,"0.0.0.0", function () {
+mqttBroker.listen(port, "0.0.0.0", function () {
 	console.log('server started and listening on port ', port)
 })
 
@@ -86,41 +86,43 @@ aedes.on('publish', async function (packet, client) {
 		//sendMsg("dapur2_out",dataTransaksiJualOpen);
 
 
-	}else if(packet.topic === "dapur2-resp"){
+	} else if (packet.topic === "dapur2-resp") {
 		//console.log("response dapur2: ",packet.payload.toString());
-		dataTransaksiJualOpen.forEach((menu,index) =>{
-			if(menu.id === (packet.payload.toString())){
-				//console.log(menu);
-				let itemDapur = {
-					id:menu.id,
-					namaPelanggan: menu.pelanggan.nama,
-					jenisOrder: menu.jenisOrder,
-					waktuOrder: menu.waktuOrder,
-					item: [],
-				};
-				menu.item.itemDetil.forEach((item,idx) =>{
-					//console.log("itemDetil",item)
-					//sementara pake id M07,M08,M09,M10
-					if((item.id === "M07")||(item.id === "M08")||(item.id === "M09")||(item.id === "M10")){
-						//menu.item.itemDetil[idx].isReady = true;
+		if (dataTransaksiJualOpen.length > 0) {
+			dataTransaksiJualOpen.forEach((menu, index) => {
+				if (menu.id === (packet.payload.toString())) {
+					//console.log(menu);
+					let itemDapur = {
+						id: menu.id,
+						namaPelanggan: menu.pelanggan.nama,
+						jenisOrder: menu.jenisOrder,
+						waktuOrder: menu.waktuOrder,
+						item: [],
+					};
+					menu.item.itemDetil.forEach((item, idx) => {
+						//console.log("itemDetil",item)
+						//sementara pake id M07,M08,M09,M10
+						if ((item.id === "M07") || (item.id === "M08") || (item.id === "M09") || (item.id === "M10")) {
+							//menu.item.itemDetil[idx].isReady = true;
 
-						let menuDapur = {
-							nama: item.nama,
-							id: item.id,
-							jml: item.jml,
-							isReady:true
-						};
+							let menuDapur = {
+								nama: item.nama,
+								id: item.id,
+								jml: item.jml,
+								isReady: true
+							};
 
-						itemDapur.item.push(menuDapur);
-					}
-				})
+							itemDapur.item.push(menuDapur);
+						}
+					})
 
-				updateItemReady(itemDapur);
+					updateItemReady(itemDapur);
 
-			}
-		})
-	}else if(packet.topic === "dapur3-resp"){
-		
+				}
+			})
+		}
+	} else if (packet.topic === "dapur3-resp") {
+
 	}
 
 })
@@ -249,16 +251,16 @@ function kirimKeDapur(data) {
 	antrianDapur3 = antrianDapur3;
 	//console.log(antrianDapur1);
 
-	if(antrianDapur1.length > 0){		
-		sendMsg("dapur1-cmd",antrianDapur1);
+	if (antrianDapur1.length > 0) {
+		sendMsg("dapur1-cmd", antrianDapur1);
 	}
 
-	if(antrianDapur2.length > 0){
-		sendMsg("dapur2-cmd",antrianDapur2);
+	if (antrianDapur2.length > 0) {
+		sendMsg("dapur2-cmd", antrianDapur2);
 	}
 
-	if(antrianDapur3.length > 0){
-		sendMsg("dapur3-cmd",antrianDapur3);
+	if (antrianDapur3.length > 0) {
+		sendMsg("dapur3-cmd", antrianDapur3);
 	}
 }
 
