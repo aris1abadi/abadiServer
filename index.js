@@ -9,11 +9,11 @@ import { createServer } from 'net'
 
 
 //local
-let pathGambar = "/home/oem/abadipos/abadipos50/static/public/"
+//let pathGambar = "/home/oem/abadipos/abadipos50/static/public/"
 //let pathGambar = "/home/oem/abadipos/abadipos50/build/client/public/"
 
 //lesehanpundong
-//let pathGambar = "/home/abadinet/abadipos50/build/client/public/"
+let pathGambar = "/home/abadinet/abadipos50/build/client/public/"
 
 
 
