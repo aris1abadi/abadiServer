@@ -16,8 +16,6 @@ import { createServer } from 'net'
 let pathGambar = "/home/abadinet/abadipos50/build/client/public/"
 
 
-
-
 const uri = 'mongodb://localhost:27017';
 const options = {
 	useUnifiedTopology: true,
