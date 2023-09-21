@@ -2,20 +2,20 @@ import { Server } from "socket.io";
 import { MongoClient } from 'mongodb';
 //import fs from "fs/promises"
 import { promises as fs } from 'fs';
-//import path from "path"
-//import { writeFile } from "fs";
-//import Multer from "multer"
-//import pkgp from "path"
-//const { path } = pkgp
-//import pkg from 'multer';
-//const { multer } = pkg;
+
+import Aedes from 'aedes'
+import { createServer } from 'net'
+
+
 
 //local
-//let pathGambar = "/home/oem/abadipos/abadipos50/static/public/"
+let pathGambar = "/home/oem/abadipos/abadipos50/static/public/"
 //let pathGambar = "/home/oem/abadipos/abadipos50/build/client/public/"
 
 //lesehanpundong
-let pathGambar = "/home/abadinet/abadipos50/build/client/public/"
+//let pathGambar = "/home/abadinet/abadipos50/build/client/public/"
+
+
 
 
 const uri = 'mongodb://localhost:27017';
@@ -36,11 +36,205 @@ let dataPelanggan;
 let dataBahan;
 let dataKategori
 let transaksiJualCountNow = 0;
-let transaksiBeliCountNow = 0
+let transaksiBeliCountNow = 0;
 let dta;
+
+let dataTransaksiJualOpen
 
 client = new MongoClient(uri, options);
 clientPromise = client.connect();
+
+//-----------MQTT------------------
+const port = 2000
+
+const aedes = new Aedes()
+const mqttBroker = createServer(aedes.handle)
+
+mqttBroker.listen(port, function () {
+	console.log('server started and listening on port ', port)
+})
+
+mqttBroker.on('error', function (err) {
+	console.log('Server error', err)
+	process.exit(1)
+})
+
+aedes.on('subscribe', function (subscriptions, client) {
+	console.log('MQTT client \x1b[32m' + (client ? client.id : client) +
+		'\x1b[0m subscribed to topics: ' + subscriptions.map(s => s.topic).join('\n'), 'from broker', aedes.id)
+})
+
+aedes.on('unsubscribe', function (subscriptions, client) {
+	console.log('MQTT client \x1b[32m' + (client ? client.id : client) +
+		'\x1b[0m unsubscribed to topics: ' + subscriptions.join('\n'), 'from broker', aedes.id)
+})
+
+// fired when a client connects
+aedes.on('client', function (client) {
+	console.log('Client Connected: \x1b[33m' + (client ? client.id : client) + '\x1b[0m', 'to broker', aedes.id)
+})
+
+// fired when a client disconnects
+aedes.on('clientDisconnect', function (client) {
+	console.log('Client Disconnected: \x1b[31m' + (client ? client.id : client) + '\x1b[0m', 'to broker', aedes.id)
+})
+
+// fired when a message is published
+aedes.on('publish', async function (packet, client) {
+	//console.log('Client \x1b[31m' + (client ? client.id : 'BROKER_' + aedes.id) + '\x1b[0m has published', packet.payload.toString(), 'on', packet.topic, 'to broker', aedes.id)
+	if (packet.topic === "dapur1-resp") {
+
+		//loadTransaksiJualOpen();
+		//sendMsg("dapur2_out",dataTransaksiJualOpen);
+
+
+	}else if(packet.topic === "dapur2-resp"){
+
+	}else if(packet.topic === "dapur3-resp"){
+		
+	}
+
+})
+
+
+
+function sendMsg(dest, content) {
+	const msg = {
+		cmd: 'publish',
+		topic: dest,
+		payload: JSON.stringify(content),
+		dup: false,
+		qos: 0,
+		retain: false
+	}
+	//console.log("isi pesan: ",dataTransaksiJualOpen)
+
+
+	aedes.publish(msg, (resp) => {
+		console.log("response:", resp)
+	})
+}
+
+function kirimKeDapur(data) {
+	let antrianDapur1 = [];
+	let antrianDapur2 = [];
+	let antrianDapur3 = [];
+	//console.log(data);
+
+	let hariIni = getTanggal(Date.now());
+	data.forEach(
+		(
+			/** @type {{  status: string; waktuOrder: any; }} */ antrian,
+			/** @type {any} */ index
+		) => {
+			if (antrian.status === "open") {
+				let wto = getTanggal(antrian.waktuOrder);
+				//console.log(wto)
+				if (wto === hariIni) {
+					let itemDapur1 = {
+						id: antrian.id,
+						namaPelanggan: antrian.pelanggan.nama,
+						jenisOrder: antrian.jenisOrder,
+						waktuOrder: antrian.waktuOrder,
+						item: [],
+					};
+					let itemDapur2 = {
+						id: antrian.id,
+						namaPelanggan: antrian.pelanggan.nama,
+						jenisOrder: antrian.jenisOrder,
+						waktuOrder: antrian.waktuOrder,
+						item: [],
+					};
+					let itemDapur3 = {
+						id: antrian.id,
+						namaPelanggan: antrian.pelanggan.nama,
+						jenisOrder: antrian.jenisOrder,
+						waktuOrder: antrian.waktuOrder,
+						item: [],
+					};
+					let menuDapur1Found = false;
+					let menuDapur2Found = false;
+					let menuDapur3Found = false;
+					antrian.item.itemDetil.forEach((item) => {
+						dataMenu.forEach((menu) => {
+							if (item.id === menu.id) {
+								if (menu.dapur === "1") {
+									let menuDapur = {
+										nama: item.nama,
+										id: item.id,
+										jml: item.jml,
+										isReady: item.isReady
+									};
+
+									itemDapur1.item.push(menuDapur);
+
+									menuDapur1Found = true;
+								}
+
+								if (menu.dapur === "2") {
+									let menuDapur = {
+										nama: item.nama,
+										id: item.id,
+										jml: item.jml,
+										isReady: item.isReady
+									};
+
+									itemDapur2.item.push(menuDapur);
+
+									menuDapur2Found = true;
+								}
+
+								if (menu.dapur === "3") {
+									let menuDapur = {
+										nama: item.nama,
+										id: item.id,
+										jml: item.jml,
+										isReady: item.isReady
+									};
+
+									itemDapur3.item.push(menuDapur);
+
+									menuDapur3Found = true;
+								}
+
+							}
+						});
+					});
+					if (menuDapur1Found) {
+						antrianDapur1.push(itemDapur1);
+					}
+
+					if (menuDapur2Found) {
+						antrianDapur2.push(itemDapur2);
+					}
+
+					if (menuDapur3Found) {
+						antrianDapur3.push(itemDapur3);
+					}
+				}
+			}
+		}
+	);
+	antrianDapur1 = antrianDapur1;
+	antrianDapur2 = antrianDapur2;
+	antrianDapur3 = antrianDapur3;
+	//console.log(antrianDapur1);
+
+	if(antrianDapur1.length > 0){		
+		sendMsg("dapur1-cmd",antrianDapur1);
+	}
+
+	if(antrianDapur2.length > 0){
+		sendMsg("dapur2-cmd",antrianDapur2);
+	}
+
+	if(antrianDapur3.length > 0){
+		sendMsg("dapur3-cmd",antrianDapur3);
+	}
+}
+
+
+//----------------------------------
 
 
 const ioServer = new Server({
@@ -51,6 +245,7 @@ const ioServer = new Server({
 	}
 });
 
+
 process.nextTick(function () {
 	console.log("Server restart ", timeNow())
 	loadMenu();
@@ -59,6 +254,7 @@ process.nextTick(function () {
 	loadSuplier();
 	loadKategori();
 	loadTransaksiJualCount();
+	//loadTransaksiJualOpen();
 })
 
 ioServer.listen(3300);
@@ -212,8 +408,8 @@ ioServer.on("connection", (socket) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
 		if ((fileData.dataMenu.gambar !== 'logo2023.png') || (fileData.dataMenu.gambar !== dataMenu.gambar)) {
-			 simpanGambar(fileData)			
-		} else {			
+			simpanGambar(fileData)
+		} else {
 			console.log("default gambar")
 		}
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
@@ -242,10 +438,10 @@ ioServer.on("connection", (socket) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
 		if ((fileData.dataBahan.gambar !== 'logo2023.png') || (fileData.dataBahan.gambar !== dataBahan.gambar)) {
-			simpanGambar(fileData)			
-	   } else {			
-		   console.log("default gambar")
-	   }
+			simpanGambar(fileData)
+		} else {
+			console.log("default gambar")
+		}
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
 		if (fileData.newBahan) {
 			//bikin id baru
@@ -272,10 +468,10 @@ ioServer.on("connection", (socket) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
 		if ((fileData.dataPelanggan.gambar !== 'logo2023.png') || (fileData.dataPelanggan.gambar !== dataPelanggan.gambar)) {
-			simpanGambar(fileData)			
-	   } else {			
-		   console.log("default gambar")
-	   }
+			simpanGambar(fileData)
+		} else {
+			console.log("default gambar")
+		}
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
 		if (fileData.newPelanggan) {
 			//bikin id baru
@@ -296,10 +492,10 @@ ioServer.on("connection", (socket) => {
 		//	callback({ message: err ? "failure" : "success" });
 		//});
 		if ((fileData.dataSuplier.gambar !== 'logo2023.png') || (fileData.dataSuplier.gambar !== dataSuplier.gambar)) {
-			simpanGambar(fileData)			
-	   } else {			
-		   console.log("default gambar")
-	   }
+			simpanGambar(fileData)
+		} else {
+			console.log("default gambar")
+		}
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
 		if (fileData.newSuplier) {
 			//bikin id baru
@@ -342,16 +538,14 @@ async function simpanGambar(file) {
 		const content = file.data0;
 		await fs.writeFile(gambarLok, content)
 		//outResp = "Sukses"
-		ioServer.emit("save_Status","sukses")
+		ioServer.emit("save_Status", "sukses")
 		//return outResp
 	} catch (err) {
 		console.log(err);
 		//outResp = "Gagal"
-		ioServer.emit("save_Status","gagal")
+		ioServer.emit("save_Status", "gagal")
 		//return outResp
 	}
-
-
 }
 
 
@@ -496,8 +690,11 @@ async function loadTransaksiJualOpen() {
 		const db = client.db('abadipos');
 
 		const dataNew = await db.collection('transaksiJual').find({ status: 'open' }).toArray();
+		//console.log("transaksi open:",dataNew);
 		if (dataNew) {
 			ioServer.emit('myTransaksiJualOpen', dataNew);
+			
+			kirimKeDapur(dataNew);
 		}
 		//
 	} catch (err) {
