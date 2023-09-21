@@ -89,10 +89,36 @@ aedes.on('publish', async function (packet, client) {
 
 
 	}else if(packet.topic === "dapur2-resp"){
-		console.log("response dapur2: ",packet.payload.toString());
+		//console.log("response dapur2: ",packet.payload.toString());
 		dataTransaksiJualOpen.forEach((menu,index) =>{
 			if(menu.id === (packet.payload.toString())){
-				console.log(menu);
+				//console.log(menu);
+				let itemDapur = {
+					id:menu.id,
+					namaPelanggan: menu.pelanggan.nama,
+					jenisOrder: menu.jenisOrder,
+					waktuOrder: menu.waktuOrder,
+					item: [],
+				};
+				menu.item.itemDetil.forEach((item,idx) =>{
+					//console.log("itemDetil",item)
+					//sementara pake id M07,M08,M09,M10
+					if((item.id === "M07")||(item.id === "M08")||(item.id === "M09")||(item.id === "M10")){
+						//menu.item.itemDetil[idx].isReady = true;
+
+						let menuDapur = {
+							nama: item.nama,
+							id: item.id,
+							jml: item.jml,
+							isReady:true
+						};
+
+						itemDapur.item.push(menuDapur);
+					}
+				})
+
+				updateItemReady(itemDapur);
+
 			}
 		})
 	}else if(packet.topic === "dapur3-resp"){
