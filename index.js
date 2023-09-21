@@ -50,7 +50,7 @@ const port = 2000
 const aedes = new Aedes()
 const mqttBroker = createServer(aedes.handle)
 
-mqttBroker.listen(port, function () {
+mqttBroker.listen(port,"0.0.0.0", function () {
 	console.log('server started and listening on port ', port)
 })
 
@@ -89,7 +89,12 @@ aedes.on('publish', async function (packet, client) {
 
 
 	}else if(packet.topic === "dapur2-resp"){
-
+		console.log("response dapur2: ",packet.payload.toString());
+		dataTransaksiJualOpen.forEach((menu,index) =>{
+			if(menu.id === (packet.payload.toString())){
+				console.log(menu);
+			}
+		})
 	}else if(packet.topic === "dapur3-resp"){
 		
 	}
@@ -693,7 +698,7 @@ async function loadTransaksiJualOpen() {
 		//console.log("transaksi open:",dataNew);
 		if (dataNew) {
 			ioServer.emit('myTransaksiJualOpen', dataNew);
-			
+			dataTransaksiJualOpen = dataNew;
 			kirimKeDapur(dataNew);
 		}
 		//
