@@ -100,24 +100,26 @@ aedes.on('publish', async function (packet, client) {
 						waktuOrder: menu.waktuOrder,
 						item: [],
 					};
-					menu.item.itemDetil.forEach((item, idx) => {
-						//console.log("itemDetil",item)
-						//sementara pake id M07,M08,M09,M10
-						if ((item.id === "M07") || (item.id === "M08") || (item.id === "M09") || (item.id === "M10")) {
-							//menu.item.itemDetil[idx].isReady = true;
+					if (menu.item.itemDetil) {
+						menu.item.itemDetil.forEach((item, idx) => {
+							//console.log("itemDetil",item)
+							//sementara pake id M07,M08,M09,M10
+							if ((item.id === "M07") || (item.id === "M08") || (item.id === "M09") || (item.id === "M10")) {
+								//menu.item.itemDetil[idx].isReady = true;
 
-							let menuDapur = {
-								nama: item.nama,
-								id: item.id,
-								jml: item.jml,
-								isReady: true
-							};
+								let menuDapur = {
+									nama: item.nama,
+									id: item.id,
+									jml: item.jml,
+									isReady: true
+								};
 
-							itemDapur.item.push(menuDapur);
-						}
-					})
+								itemDapur.item.push(menuDapur);
+							}
+						})
 
-					updateItemReady(itemDapur);
+						updateItemReady(itemDapur);
+					}
 
 				}
 			})
