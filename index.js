@@ -190,53 +190,55 @@ function kirimKeDapur(data) {
 						let menuDapur1Found = false;
 						let menuDapur2Found = false;
 						let menuDapur3Found = false;
-						antrian.item.itemDetil.forEach((item) => {
-							dataMenu.forEach((menu) => {
-								if ((item.id === menu.id) && (!item.isReady)) {
-									if (menu.dapur === "1") {
+						if (antrian.item.itemDetil) {
+							antrian.item.itemDetil.forEach((item) => {
+								dataMenu.forEach((menu) => {
+									if ((item.id === menu.id) && (!item.isReady)) {
+										if (menu.dapur === "1") {
 
-										let menuDapur = {
-											nama: item.nama,
-											id: item.id,
-											jml: item.jml,
-											isReady: item.isReady
-										};
+											let menuDapur = {
+												nama: item.nama,
+												id: item.id,
+												jml: item.jml,
+												isReady: item.isReady
+											};
 
-										itemDapur1.item.push(menuDapur);
+											itemDapur1.item.push(menuDapur);
 
-										menuDapur1Found = true;
+											menuDapur1Found = true;
+
+										}
+
+										if (menu.dapur === "2") {
+											let menuDapur = {
+												nama: item.nama,
+												id: item.id,
+												jml: item.jml,
+												isReady: item.isReady
+											};
+
+											itemDapur2.item.push(menuDapur);
+
+											menuDapur2Found = true;
+										}
+
+										if (menu.dapur === "3") {
+											let menuDapur = {
+												nama: item.nama,
+												id: item.id,
+												jml: item.jml,
+												isReady: item.isReady
+											};
+
+											itemDapur3.item.push(menuDapur);
+
+											menuDapur3Found = true;
+										}
 
 									}
-
-									if (menu.dapur === "2") {
-										let menuDapur = {
-											nama: item.nama,
-											id: item.id,
-											jml: item.jml,
-											isReady: item.isReady
-										};
-
-										itemDapur2.item.push(menuDapur);
-
-										menuDapur2Found = true;
-									}
-
-									if (menu.dapur === "3") {
-										let menuDapur = {
-											nama: item.nama,
-											id: item.id,
-											jml: item.jml,
-											isReady: item.isReady
-										};
-
-										itemDapur3.item.push(menuDapur);
-
-										menuDapur3Found = true;
-									}
-
-								}
+								});
 							});
-						});
+						}
 						if (menuDapur1Found) {
 							antrianDapur1.push(itemDapur1);
 						}
