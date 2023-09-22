@@ -88,41 +88,41 @@ aedes.on('publish', async function (packet, client) {
 	} else if (packet.topic === "dapur2-resp") {
 		//console.log("response dapur2: ",packet.payload.toString());
 		let msg = (packet.payload.toString()).split(';');
-		
-			if (dataTransaksiJualOpen) {
-				dataTransaksiJualOpen.forEach((menu, index) => {
-					if (menu.id === msg[1]) {
-						//console.log(menu);
-						let itemDapur = {
-							id: menu.id,
-							namaPelanggan: menu.pelanggan.nama,
-							jenisOrder: menu.jenisOrder,
-							waktuOrder: menu.waktuOrder,
-							item: [],
-						};
-						menu.item.itemDetil.forEach((item, idx) => {
-							//console.log("itemDetil",item)
-							//sementara pake id M07,M08,M09,M10
-							if ((item.id === "M07") || (item.id === "M08") || (item.id === "M09") || (item.id === "M10")) {
-								//menu.item.itemDetil[idx].isReady = true;
 
-								let menuDapur = {
-									nama: item.nama,
-									id: item.id,
-									jml: item.jml,
-									isReady: true
-								};
+		if (dataTransaksiJualOpen) {
+			dataTransaksiJualOpen.forEach((menu, index) => {
+				if (menu.id === msg[1]) {
+					//console.log(menu);
+					let itemDapur = {
+						id: menu.id,
+						namaPelanggan: menu.pelanggan.nama,
+						jenisOrder: menu.jenisOrder,
+						waktuOrder: menu.waktuOrder,
+						item: [],
+					};
+					menu.item.itemDetil.forEach((item, idx) => {
+						//console.log("itemDetil",item)
+						//sementara pake id M07,M08,M09,M10
+						if ((item.id === "M07") || (item.id === "M08") || (item.id === "M09") || (item.id === "M10")) {
+							//menu.item.itemDetil[idx].isReady = true;
 
-								itemDapur.item.push(menuDapur);
-							}
-						})
+							let menuDapur = {
+								nama: item.nama,
+								id: item.id,
+								jml: item.jml,
+								isReady: true
+							};
 
-						updateItemReady(itemDapur);
+							itemDapur.item.push(menuDapur);
+						}
+					})
 
-					}
-				})
-			}
-			loadTransaksiJualOpen();
+					updateItemReady(itemDapur);
+
+				}
+			})
+		}
+		loadTransaksiJualOpen();
 		//if(msg[0] === 'nextOrder'){
 		//	loadTransaksiJualOpen();
 		//}
@@ -156,116 +156,119 @@ function kirimKeDapur(data) {
 	//console.log(data);
 
 	let hariIni = getTanggal(Date.now());
-	data.forEach(
-		(
+	if (data) {
+		data.forEach(
+			(
 			/** @type {{  status: string; waktuOrder: any; }} */ antrian,
 			/** @type {any} */ index
-		) => {
-			if (antrian.status === "open") {
-				let wto = getTanggal(antrian.waktuOrder);
-				//console.log(wto)
-				if (wto === hariIni) {
-					let itemDapur1 = {
-						id: antrian.id,
-						namaPelanggan: antrian.pelanggan.nama,
-						jenisOrder: antrian.jenisOrder,
-						waktuOrder: antrian.waktuOrder,
-						item: [],
-					};
-					let itemDapur2 = {
-						id: antrian.id,
-						namaPelanggan: antrian.pelanggan.nama,
-						jenisOrder: antrian.jenisOrder,
-						waktuOrder: antrian.waktuOrder,
-						item: [],
-					};
-					let itemDapur3 = {
-						id: antrian.id,
-						namaPelanggan: antrian.pelanggan.nama,
-						jenisOrder: antrian.jenisOrder,
-						waktuOrder: antrian.waktuOrder,
-						item: [],
-					};
-					let menuDapur1Found = false;
-					let menuDapur2Found = false;
-					let menuDapur3Found = false;
-					antrian.item.itemDetil.forEach((item) => {
-						dataMenu.forEach((menu) => {
-							if ((item.id === menu.id) && (!item.isReady)) {
-								if (menu.dapur === "1") {
+			) => {
+				if (antrian.status === "open") {
+					let wto = getTanggal(antrian.waktuOrder);
+					//console.log(wto)
+					if (wto === hariIni) {
+						let itemDapur1 = {
+							id: antrian.id,
+							namaPelanggan: antrian.pelanggan.nama,
+							jenisOrder: antrian.jenisOrder,
+							waktuOrder: antrian.waktuOrder,
+							item: [],
+						};
+						let itemDapur2 = {
+							id: antrian.id,
+							namaPelanggan: antrian.pelanggan.nama,
+							jenisOrder: antrian.jenisOrder,
+							waktuOrder: antrian.waktuOrder,
+							item: [],
+						};
+						let itemDapur3 = {
+							id: antrian.id,
+							namaPelanggan: antrian.pelanggan.nama,
+							jenisOrder: antrian.jenisOrder,
+							waktuOrder: antrian.waktuOrder,
+							item: [],
+						};
+						let menuDapur1Found = false;
+						let menuDapur2Found = false;
+						let menuDapur3Found = false;
+						antrian.item.itemDetil.forEach((item) => {
+							dataMenu.forEach((menu) => {
+								if ((item.id === menu.id) && (!item.isReady)) {
+									if (menu.dapur === "1") {
 
-									let menuDapur = {
-										nama: item.nama,
-										id: item.id,
-										jml: item.jml,
-										isReady: item.isReady
-									};
+										let menuDapur = {
+											nama: item.nama,
+											id: item.id,
+											jml: item.jml,
+											isReady: item.isReady
+										};
 
-									itemDapur1.item.push(menuDapur);
+										itemDapur1.item.push(menuDapur);
 
-									menuDapur1Found = true;
+										menuDapur1Found = true;
+
+									}
+
+									if (menu.dapur === "2") {
+										let menuDapur = {
+											nama: item.nama,
+											id: item.id,
+											jml: item.jml,
+											isReady: item.isReady
+										};
+
+										itemDapur2.item.push(menuDapur);
+
+										menuDapur2Found = true;
+									}
+
+									if (menu.dapur === "3") {
+										let menuDapur = {
+											nama: item.nama,
+											id: item.id,
+											jml: item.jml,
+											isReady: item.isReady
+										};
+
+										itemDapur3.item.push(menuDapur);
+
+										menuDapur3Found = true;
+									}
 
 								}
-
-								if (menu.dapur === "2") {
-									let menuDapur = {
-										nama: item.nama,
-										id: item.id,
-										jml: item.jml,
-										isReady: item.isReady
-									};
-
-									itemDapur2.item.push(menuDapur);
-
-									menuDapur2Found = true;
-								}
-
-								if (menu.dapur === "3") {
-									let menuDapur = {
-										nama: item.nama,
-										id: item.id,
-										jml: item.jml,
-										isReady: item.isReady
-									};
-
-									itemDapur3.item.push(menuDapur);
-
-									menuDapur3Found = true;
-								}
-
-							}
+							});
 						});
-					});
-					if (menuDapur1Found) {
-						antrianDapur1.push(itemDapur1);
-					}
+						if (menuDapur1Found) {
+							antrianDapur1.push(itemDapur1);
+						}
 
-					if (menuDapur2Found) {
-						antrianDapur2.push(itemDapur2);
-					}
+						if (menuDapur2Found) {
+							antrianDapur2.push(itemDapur2);
+						}
 
-					if (menuDapur3Found) {
-						antrianDapur3.push(itemDapur3);
+						if (menuDapur3Found) {
+							antrianDapur3.push(itemDapur3);
+						}
 					}
 				}
 			}
+		);
+
+		antrianDapur1 = antrianDapur1;
+		antrianDapur2 = antrianDapur2;
+		antrianDapur3 = antrianDapur3;
+		//console.log(antrianDapur1);
+
+		if (antrianDapur1.length > 0) {
+			sendMsg("dapur1-cmd", antrianDapur1);
 		}
-	);
-	antrianDapur1 = antrianDapur1;
-	antrianDapur2 = antrianDapur2;
-	antrianDapur3 = antrianDapur3;
-	//console.log(antrianDapur1);
 
-	if (antrianDapur1.length > 0) {
-		sendMsg("dapur1-cmd", antrianDapur1);
-	}
+		if (antrianDapur2.length > 0) {
+			sendMsg("dapur2-cmd", antrianDapur2);
+		}
 
-	if (antrianDapur2.length > 0) {
-		sendMsg("dapur2-cmd", antrianDapur2);
-	}
-
-	if (antrianDapur3.length > 0) {
-		sendMsg("dapur3-cmd", antrianDapur3);
+		if (antrianDapur3.length > 0) {
+			sendMsg("dapur3-cmd", antrianDapur3);
+		}
 	}
 }
 
