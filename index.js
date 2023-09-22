@@ -85,10 +85,9 @@ aedes.on('publish', async function (packet, client) {
 		//loadTransaksiJualOpen();
 		//sendMsg("dapur2_out",dataTransaksiJualOpen);
 
-
 	} else if (packet.topic === "dapur2-resp") {
-		//console.log("response dapur2: ",packet.payload.toString());
-		let msg = packet.payload.toString().split(';');
+		console.log("response dapur2: ",packet.payload.toString());
+		let msg = (packet.payload.toString()).split(';');
 		if (msg[0] === 'nextProses') {
 			if (dataTransaksiJualOpen) {
 				dataTransaksiJualOpen.forEach((menu, index) => {
@@ -132,8 +131,6 @@ aedes.on('publish', async function (packet, client) {
 
 })
 
-
-
 function sendMsg(dest, content) {
 	const msg = {
 		cmd: 'publish',
@@ -147,7 +144,7 @@ function sendMsg(dest, content) {
 
 
 	aedes.publish(msg, (resp) => {
-		console.log("response:", resp)
+		//console.log("response:", resp)
 	})
 }
 
