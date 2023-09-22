@@ -88,38 +88,43 @@ aedes.on('publish', async function (packet, client) {
 
 	} else if (packet.topic === "dapur2-resp") {
 		//console.log("response dapur2: ",packet.payload.toString());
-		if (dataTransaksiJualOpen.length > 0) {
-			dataTransaksiJualOpen.forEach((menu, index) => {
-				if (menu.id === (packet.payload.toString())) {
-					//console.log(menu);
-					let itemDapur = {
-						id: menu.id,
-						namaPelanggan: menu.pelanggan.nama,
-						jenisOrder: menu.jenisOrder,
-						waktuOrder: menu.waktuOrder,
-						item: [],
-					};
-					menu.item.itemDetil.forEach((item, idx) => {
-						//console.log("itemDetil",item)
-						//sementara pake id M07,M08,M09,M10
-						if ((item.id === "M07") || (item.id === "M08") || (item.id === "M09") || (item.id === "M10")) {
-							//menu.item.itemDetil[idx].isReady = true;
+		let msg = packet.payload.toString().split(';');
+		if (msg[0] === 'nextProses') {
+			if (dataTransaksiJualOpen) {
+				dataTransaksiJualOpen.forEach((menu, index) => {
+					if (menu.id === (packet.payload.toString())) {
+						//console.log(menu);
+						let itemDapur = {
+							id: menu.id,
+							namaPelanggan: menu.pelanggan.nama,
+							jenisOrder: menu.jenisOrder,
+							waktuOrder: menu.waktuOrder,
+							item: [],
+						};
+						menu.item.itemDetil.forEach((item, idx) => {
+							//console.log("itemDetil",item)
+							//sementara pake id M07,M08,M09,M10
+							if ((item.id === "M07") || (item.id === "M08") || (item.id === "M09") || (item.id === "M10")) {
+								//menu.item.itemDetil[idx].isReady = true;
 
-							let menuDapur = {
-								nama: item.nama,
-								id: item.id,
-								jml: item.jml,
-								isReady: true
-							};
+								let menuDapur = {
+									nama: item.nama,
+									id: item.id,
+									jml: item.jml,
+									isReady: true
+								};
 
-							itemDapur.item.push(menuDapur);
-						}
-					})
+								itemDapur.item.push(menuDapur);
+							}
+						})
 
-					updateItemReady(itemDapur);
+						updateItemReady(itemDapur);
 
-				}
-			})
+					}
+				})
+			}
+		} else {
+			loadTransaksiJualOpen();
 		}
 	} else if (packet.topic === "dapur3-resp") {
 
@@ -188,8 +193,9 @@ function kirimKeDapur(data) {
 					let menuDapur3Found = false;
 					antrian.item.itemDetil.forEach((item) => {
 						dataMenu.forEach((menu) => {
-							if (item.id === menu.id) {
+							if ((item.id === menu.id) && (!item.isReady)) {
 								if (menu.dapur === "1") {
+
 									let menuDapur = {
 										nama: item.nama,
 										id: item.id,
@@ -200,6 +206,7 @@ function kirimKeDapur(data) {
 									itemDapur1.item.push(menuDapur);
 
 									menuDapur1Found = true;
+
 								}
 
 								if (menu.dapur === "2") {
@@ -264,9 +271,7 @@ function kirimKeDapur(data) {
 	}
 }
 
-
 //----------------------------------
-
 
 const ioServer = new Server({
 	cors: {
