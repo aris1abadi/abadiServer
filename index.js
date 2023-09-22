@@ -85,13 +85,11 @@ aedes.on('publish', async function (packet, client) {
 		//loadTransaksiJualOpen();
 		//sendMsg("dapur2_out",dataTransaksiJualOpen);
 
-	} else if (packet.topic === "dapur2-resp") {
-		//console.log("response dapur2: ",packet.payload.toString());
-		let msg = (packet.payload.toString()).split(';');
+	} else if (packet.topic === "dapur2-resp") {		
 
 		if (dataTransaksiJualOpen) {
 			dataTransaksiJualOpen.forEach((menu, index) => {
-				if (menu.id === msg[1]) {
+				if (menu.id === packet.payload.toString()) {
 					//console.log(menu);
 					let itemDapur = {
 						id: menu.id,
