@@ -122,9 +122,10 @@ aedes.on('publish', async function (packet, client) {
 					}
 				})
 			}
-		if(msg[0] === 'nextOrder'){
 			loadTransaksiJualOpen();
-		}
+		//if(msg[0] === 'nextOrder'){
+		//	loadTransaksiJualOpen();
+		//}
 	} else if (packet.topic === "dapur3-resp") {
 
 	}
