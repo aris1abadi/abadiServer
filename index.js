@@ -85,7 +85,7 @@ aedes.on('publish', async function (packet, client) {
 		//loadTransaksiJualOpen();
 		//sendMsg("dapur2_out",dataTransaksiJualOpen);
 
-	} else if (packet.topic === "dapur2-resp") {		
+	} else if (packet.topic === "dapur2-resp") {
 
 		if (dataTransaksiJualOpen) {
 			dataTransaksiJualOpen.forEach((menu, index) => {
@@ -122,7 +122,8 @@ aedes.on('publish', async function (packet, client) {
 				}
 			})
 		}
-		loadTransaksiJualOpen();
+		//tunda update dalam  5 detik
+		setTimeout(loadTransaksiJualOpen,5000);
 		//if(msg[0] === 'nextOrder'){
 		//	loadTransaksiJualOpen();
 		//}
@@ -192,46 +193,25 @@ function kirimKeDapur(data) {
 						let menuDapur3Found = false;
 						if (antrian.item.itemDetil) {
 							antrian.item.itemDetil.forEach((item) => {
+								//console.log("item: ",item);
 								dataMenu.forEach((menu) => {
 									if ((item.id === menu.id) && (!item.isReady)) {
+										let menuDapur = {
+											id: item.id,
+											nama: item.nama,
+											isReady: item.isReady,											
+											jml: item.jml,
+											
+										};
+										//console.log("menu item: ",menuDapur);
 										if (menu.dapur === "1") {
-
-											let menuDapur = {
-												nama: item.nama,
-												id: item.id,
-												jml: item.jml,
-												isReady: item.isReady
-											};
-
 											itemDapur1.item.push(menuDapur);
-
 											menuDapur1Found = true;
-
-										}
-
-										if (menu.dapur === "2") {
-											let menuDapur = {
-												nama: item.nama,
-												id: item.id,
-												jml: item.jml,
-												isReady: item.isReady
-											};
-
+										} else if (menu.dapur === "2") {
 											itemDapur2.item.push(menuDapur);
-
 											menuDapur2Found = true;
-										}
-
-										if (menu.dapur === "3") {
-											let menuDapur = {
-												nama: item.nama,
-												id: item.id,
-												jml: item.jml,
-												isReady: item.isReady
-											};
-
+										} else if (menu.dapur === "3") {
 											itemDapur3.item.push(menuDapur);
-
 											menuDapur3Found = true;
 										}
 
@@ -245,6 +225,7 @@ function kirimKeDapur(data) {
 
 						if (menuDapur2Found) {
 							antrianDapur2.push(itemDapur2);
+							//console.log(JSON.stringify(antrianDapur2))
 						}
 
 						if (menuDapur3Found) {
@@ -734,6 +715,7 @@ async function loadTransaksiJualOpen() {
 			ioServer.emit('myTransaksiJualOpen', dataNew);
 			dataTransaksiJualOpen = dataNew;
 			kirimKeDapur(dataNew);
+			//console.log(dataNew)
 		}
 		//
 	} catch (err) {
@@ -1082,27 +1064,7 @@ async function updateItemReady(newData) {
 	} catch (err) {
 		console.log(err);
 	}
-
-	//try {
-	// @ts-ignore
-	//const client = await clientPromise;
-	//const db = client.db('abadipos');
-
-	// @ts-ignore
-	//const tes = await db.collection('transaksiJual').updateOne(
-	//	{ id: newData.id },
-	//	{
-	//		$set: {					
-	//			item: data.item
-	//		}
-	//	}
-	//);
-	//update status  disini
-	///	ioServer.emit("UpdateItemChange", newData)
-	////
-	//} catch (err) {
-	//	console.log(err);
-	//}
+	
 }
 
 // @ts-ignore
