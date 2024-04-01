@@ -43,7 +43,7 @@ client = new MongoClient(uri, options);
 clientPromise = client.connect();
 
 //-----------MQTT------------------
-const port = 2000
+const port = 3003
 
 const aedes = new Aedes()
 const mqttBroker = createServer(aedes.handle)
@@ -365,14 +365,7 @@ ioServer.on("connection", (socket) => {
 		simpanTransaksiBeli(msg);
 	});
 
-	//socket.on('simpanTransaksiJualCount', (msg) => {
-	//	simpanTransaksiJualCount(msg);
-	//});
-
-	//socket.on('simpanTransaksiBeliCount', (msg) => {
-	//	simpanTransaksiBeliCount(msg);
-	//});
-
+	
 	socket.on('updateTransaksiJual', (msg) => {
 		updateTransaksiJual(msg);
 	});
@@ -933,10 +926,13 @@ async function simpanHutang(newData) {
 		suplier: newData.suplier,
 		waktu: newData.waktuBeli,
 		totalTagihan: newData.totalTagihan,
+		totalBayar:newData.totalBayar,
 		status: "open",
 		user: newData.user,
 		Pembayaran: []
 	}
+
+	
 
 	try {
 		// @ts-ignore
