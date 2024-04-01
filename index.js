@@ -13,7 +13,7 @@ import { createServer } from 'net'
 //let pathGambar = "/home/oem/abadipos/abadipos50/build/client/public/"
 
 //lesehanpundong
-let pathGambar = "/home/abadinet/abadipos50/build/client/public/"
+let pathGambar = "/home/abadinet/abadipos//abadipos50/build/client/public/"
 
 
 const uri = 'mongodb://localhost:27017';
