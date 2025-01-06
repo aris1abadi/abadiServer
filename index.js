@@ -22,9 +22,10 @@ const options = {
 	useNewUrlParser: true
 };
 
-let client;
+
+//let client;
 // @ts-ignore
-let clientPromise;
+//let clientPromise;
 
 // @ts-ignore
 let dataMenu;
@@ -39,8 +40,11 @@ let dta;
 
 let dataTransaksiJualOpen
 
-client = new MongoClient(uri, options);
-clientPromise = client.connect();
+const client = new MongoClient(uri, options);
+const clientPromise = client.connect();
+
+const dbClient = await clientPromise;
+const db = dbClient.db('abadipos');
 
 //-----------MQTT------------------
 const port = 3003
@@ -123,7 +127,7 @@ aedes.on('publish', async function (packet, client) {
 			})
 		}
 		//tunda update dalam  5 detik
-		setTimeout(loadTransaksiJualOpen,5000);
+		setTimeout(loadTransaksiJualOpen, 5000);
 		//if(msg[0] === 'nextOrder'){
 		//	loadTransaksiJualOpen();
 		//}
@@ -199,9 +203,9 @@ function kirimKeDapur(data) {
 										let menuDapur = {
 											id: item.id,
 											nama: item.nama,
-											isReady: item.isReady,											
+											isReady: item.isReady,
 											jml: item.jml,
-											
+
 										};
 										//console.log("menu item: ",menuDapur);
 										if (menu.dapur === "1") {
@@ -365,7 +369,7 @@ ioServer.on("connection", (socket) => {
 		simpanTransaksiBeli(msg);
 	});
 
-	
+
 	socket.on('updateTransaksiJual', (msg) => {
 		updateTransaksiJual(msg);
 	});
@@ -389,6 +393,15 @@ ioServer.on("connection", (socket) => {
 	socket.on('hapusItemLama', (msg) => {
 		hapusItemLama(msg);
 	});
+
+	socket.on('getHutang', (msg) => {
+		loadHutang(msg);
+	});
+
+	socket.on('getLastWeekHutang', (msg) => {
+		loadLastWeekHutang(msg);
+	});
+
 
 	socket.on("waQR", (msg) => {
 		// @ts-ignore
@@ -572,8 +585,8 @@ async function loadMenu() {
 		// @ts-ignore
 
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		dta = await db.collection('dataMenu').find().toArray();
 		if (dta) {
@@ -592,8 +605,8 @@ async function loadKategori() {
 		// @ts-ignore
 
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		dta = await db.collection('dataKategori').find().toArray();
 		if (dta) {
@@ -612,8 +625,8 @@ async function loadBahan() {
 		// @ts-ignore
 
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		dta = await db.collection('dataBahan').find().toArray();
 
@@ -632,8 +645,8 @@ async function loadBahan() {
 async function loadSuplier() {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		dta = await db.collection('dataSuplier').find().toArray();
 		if (dta) {
@@ -649,8 +662,8 @@ async function loadSuplier() {
 async function loadPelanggan() {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		dta = await db.collection('dataPelanggan').find().toArray();
 		if (dta) {
@@ -667,8 +680,8 @@ async function loadPelanggan() {
 async function loadMenuPesenan() {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		dta = await db.collection('dataMenuPesenan').find().toArray();
 		if (dta) {
@@ -683,8 +696,8 @@ async function loadMenuPesenan() {
 async function loadTransaksiJual() {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		dta = await db.collection('transaksiJual').find({ status: 'open' }).toArray();
 		if (dta) {
@@ -699,8 +712,8 @@ async function loadTransaksiJual() {
 async function loadTransaksiJualOpen() {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		const dataNew = await db.collection('transaksiJual').find({ status: 'open' }).toArray();
 		//console.log("transaksi open:",dataNew);
@@ -719,8 +732,8 @@ async function loadTransaksiJualOpen() {
 async function loadTransaksiBeli() {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		dta = await db.collection('transaksiBeli').find({ status: 'open' }).toArray();
 		if (dta) {
@@ -732,23 +745,75 @@ async function loadTransaksiBeli() {
 	}
 }
 
+async function loadLastWeekHutang(suplier_Id) {
+	const timeNow = getTimeNow()
+	const lastWeek = getTimeLastWeek()
+	console.log('suplier: ' + suplier_Id + ' lastWeek: ' + lastWeek + ' Now: ' + timeNow)
+	
+	try {
+		// @ts-ignore
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
+
+		dta = await db.collection('transaksiHutang').find({ suplierId: suplier_Id, waktu: {$gt: lastWeek }}).toArray();
+		  
+		if (dta) {
+			ioServer.emit('lastWeekHutang', dta);
+			console.log('LastWeekHutang: ' + dta)
+		}
+		//
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+async function loadHutang(suplier_Id) {
+	try {
+		// @ts-ignore
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
+
+		dta = await db.collection('transaksiHutang').find({ suplierId: suplier_Id, status: 'last' }).toArray();
+		if (dta) {
+			ioServer.emit('lastHutang', dta[0]);
+		}
+		//
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+/*
 function getTimeNow() {
 	const d = new Date();
 	const text = d.toLocaleDateString('id-ID', { "timeZone": "Asia/jakarta" })
 	const h = new Date(text)
 	return h.getTime()
 }
+	*/
+
+function getTimeNow() {
+	const today = new Date();
+	const jakartaTime = new Date(today.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+	return Math.floor(jakartaTime.getTime() / 1000);
+}
+function getTimeLastWeek() {
+	const now = new Date();
+	const jakartaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+	const lastWeek = new Date(jakartaTime - 7 * 24 * 60 * 60 * 1000);
+	return Math.floor(lastWeek.getTime() / 1000);
+}
 
 
 async function loadCloseTransaksiNow() {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		const hariIni = getTanggal(Date.now())
 		const timeNow = getTimeNow()
-		//console.log("tanggal sekarang" + tanggal)
+		console.log("tanggal sekarang " + timeNow)
 		const dataNow = await db
 			.collection('transaksiJual')
 			.find({ waktuOrder: { $gt: timeNow }, status: "close" })
@@ -767,7 +832,7 @@ async function loadCloseTransaksiNow() {
 			})
 			// @ts-ignore
 			ioServer.emit('myCloseTransaksiNow', dataHariIni);
-			//console.log(dataNow)
+			console.log(dataNow)
 		}
 		//
 	} catch (err) {
@@ -778,8 +843,8 @@ async function loadCloseTransaksiNow() {
 async function loadTransaksiJualCount() {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		dta = await db.collection('transaksiCount').find().toArray();
 		const timeElapsed = Date.now();
@@ -822,8 +887,8 @@ async function loadTransaksiJualCount() {
 async function loadTransaksiBeliCount() {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		dta = await db.collection('transaksiCount').findOne({ dayCount: 'base' });
 		//console.log(dta)
@@ -840,8 +905,8 @@ async function loadTransaksiBeliCount() {
 async function simpanTransaksiJual(data) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		//const collection = db.collection('dataTransaksijual')
 		// @ts-ignore
 		const tes = await db.collection('transaksiJual').insertOne(data);
@@ -891,8 +956,8 @@ async function simpanTransaksiJual(data) {
 }
 async function loadNewStok() {
 	// @ts-ignore
-	const client = await clientPromise;
-	const db = client.db('abadipos');
+	//const client = await clientPromise;
+	//const db = client.db('abadipos');
 
 	dta = await db.collection('dataMenu').find().toArray();
 	if (dta) {
@@ -905,8 +970,8 @@ async function loadNewStok() {
 async function simpanMenu(newData) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		//const collection = db.collection('dataTransaksijual')
 		// @ts-ignore
 		const tes = await db.collection('dataMenu').insertOne(newData);
@@ -919,31 +984,106 @@ async function simpanMenu(newData) {
 	}
 }
 
+function setCharAt(str, index, chr) {
+	if (index > str.length - 1) return str;
+	return str.substring(0, index) + chr + str.substring(index + 1);
+}
+
 // @ts-ignore
 async function simpanHutang(newData) {
-	let newHutang = {
-		idTransaksi: newData.id,
-		suplier: newData.suplier,
+
+	//ganti id transaksi Bxxxxx ke Hxxxx
+	const newId = setCharAt(newData.id, 0, 'H')
+
+	let lastHutangValue = 0
+	let newHutangValue = newData.totalTagihan - newData.totalBayar
+
+	//const client = await clientPromise;
+	//const db = client.db('abadipos');
+
+	//cek hutang sebelumnya
+	const lastHt = await db
+		.collection('transaksiHutang')
+		.find({ suplierId: newData.suplierId, status: "last" })
+		.toArray();
+
+	console.log('lastHutang: ' + JSON.stringify(lastHt))
+	if (lastHt.length > 0) {
+		lastHutangValue = lastHt[0].newHutang
+		newHutangValue = lastHutangValue + (newData.totalTagihan - newData.totalBayar)
+
+		//mengganti status last ke close
+		//hanya 1 transaksi hutang yang tercatat(last)
+		try {
+			// @ts-ignore
+			//const client = await clientPromise;
+			//const db = client.db('abadipos');
+			//const collection = db.collection('dataTransaksijual')
+			// @ts-ignore
+			const tes = await db.collection('transaksiHutang').updateOne(
+				{ id: lastHt[0].id },
+				{
+					$set: {
+
+						status: 'close'
+					}
+				}
+			);
+		} catch (err) {
+			console.log(err);
+		}
+	}
+	let newBayar = {
+		userId: newData.userId,
 		waktu: newData.waktuBeli,
-		totalTagihan: newData.totalTagihan,
-		totalBayar:newData.totalBayar,
-		status: "open",
-		user: newData.user,
-		Pembayaran: []
+		bayar: 0
+	}
+	let itembayar = [];
+
+	if (newData.totalBayar !== 0) {
+		newBayar.bayar = newData.totalBayar
+		itembayar.push(newBayar)
+
 	}
 
-	
+
+	let newHutang = {
+		id: newId,
+		suplierId: newData.suplierId,
+		suplierNama: newData.suplierNama,
+		suplier: newData.suplier,
+		waktu: newData.waktuBeli,
+		lastHutang: lastHutangValue,//hutang yang lalu
+		totalTagihan: newData.totalTagihan,//total tagihan baru
+		totalBayar: newData.totalBayar,//pembayaran
+		newHutang: newHutangValue,
+		status: "last",
+		userId: "U01",
+		userNama: "Kasir",
+		Pembayaran: itembayar
+	}
 
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		//const collection = db.collection('dataTransaksijual')
 		// @ts-ignore
 		const tes = await db.collection('transaksiHutang').insertOne(newHutang);
 	} catch (err) {
 		console.log(err);
 	}
+
+
+
+}
+
+async function bayarHutang(data) {
+	/*
+	userId	
+	waktu
+	bayar
+	*/
 
 
 }
@@ -976,13 +1116,15 @@ async function updateStokBahan(newData) {
 async function simpanTransaksiBeli(data) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		//const collection = db.collection('dataTransaksijual')
 		// @ts-ignore
 		const tes = await db.collection('transaksiBeli').insertOne(data);
 		//console.log(JSON.stringify(data));
-		simpanHutang(data)
+		if (data.totalBayar != data.totalTagihan) {
+			simpanHutang(data)
+		}
 		//update stok bahan
 		updateStokBahan(data)
 		//loadTransaksiBeli();
@@ -1000,8 +1142,8 @@ async function simpanTransaksiBeli(data) {
 async function updateTransaksiJual(data) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		//const collection = db.collection('dataTransaksijual')
 		// @ts-ignore
 		const tes = await db.collection('transaksiJual').updateOne(
@@ -1029,8 +1171,8 @@ async function updateTransaksiJual(data) {
 async function updateItemReady(newData) {
 	//load data item
 	try {
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		dta = await db.collection('transaksiJual').find({ id: newData.id }).toArray();
 		//console.log(dta)
@@ -1060,15 +1202,15 @@ async function updateItemReady(newData) {
 	} catch (err) {
 		console.log(err);
 	}
-	
+
 }
 
 // @ts-ignore
 async function simpanTransaksiJualCount(count) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		//const collection = db.collection('dataTransaksijual')
 		// @ts-ignore
 		const tes = await db
@@ -1086,8 +1228,8 @@ async function simpanTransaksiJualCount(count) {
 async function simpanTransaksiBeliCount(count) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		//const collection = db.collection('dataTransaksijual')
 		// @ts-ignore
 		const tes = await db
@@ -1105,8 +1247,8 @@ async function simpanTransaksiBeliCount(count) {
 async function simpanPelanggan(dataPlg) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		//const collection = db.collection('dataTransaksijual')
 		// @ts-ignore
 		const tes = await db.collection('dataPelanggan').insertOne(dataPlg);
@@ -1120,8 +1262,8 @@ async function simpanPelanggan(dataPlg) {
 async function updatePelanggan(newPelanggan) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		// @ts-ignore
 		const tes = await db.collection('dataPelanggan').updateOne(
@@ -1151,8 +1293,8 @@ async function updatePelanggan(newPelanggan) {
 async function simpanSuplier(dataSp) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		//const collection = db.collection('dataTransaksijual')
 		// @ts-ignore
 		const tes = await db.collection('dataSuplier').insertOne(dataSp);
@@ -1166,8 +1308,8 @@ async function simpanSuplier(dataSp) {
 async function updateSuplier(newSuplier) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		// @ts-ignore
 		const tes = await db.collection('dataSuplier').updateOne(
@@ -1196,8 +1338,8 @@ async function updateSuplier(newSuplier) {
 async function closeTransaksiJual(data) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		// @ts-ignore
 		const tes = await db.collection('transaksiJual').updateOne(
 			{ id: data.id },
@@ -1224,8 +1366,8 @@ async function closeTransaksiJual(data) {
 async function tambahStok(newStok) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		const menu = await db.collection('dataMenu').find().toArray();
 		//console.log(newData)
 
@@ -1256,8 +1398,8 @@ async function tambahStok(newStok) {
 async function hapusItemLama(id) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		// @ts-ignore
 		let itm = [];
 		//console.log('hapus item ' + id);
@@ -1276,8 +1418,8 @@ async function hapusItemLama(id) {
 async function updateStok(newData) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		// @ts-ignore
 		const tes = await db
@@ -1302,15 +1444,15 @@ waId: "-",
 		id: "-",
 		kategori: "-",
 		gambar: "-"
-
-
+	
+	
 */
 
 async function updateMenu(newData) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		//const collection = db.collection('dataTransaksijual')
 		// @ts-ignore
 		const tes = await db.collection('dataMenu').updateOne(
@@ -1342,8 +1484,8 @@ async function updateMenu(newData) {
 async function updateBahan(newData) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		// @ts-ignore
 		const tes = await db.collection('dataBahan').updateOne(
@@ -1377,8 +1519,8 @@ async function updateBahan(newData) {
 async function simpanBahan(newData) {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 		//const collection = db.collection('dataTransaksijual')
 		// @ts-ignore
 		const tes = await db.collection('dataBahan').insertOne(newData);
@@ -1398,8 +1540,8 @@ async function simpanBahan(newData) {
 async function loadTransaksiBeliNow() {
 	try {
 		// @ts-ignore
-		const client = await clientPromise;
-		const db = client.db('abadipos');
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
 
 		const hariIni = getTanggal(Date.now())
 		const timeNow = getTimeNow()
