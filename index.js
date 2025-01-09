@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import { MongoClient } from 'mongodb';
 //import fs from "fs/promises"
 import { promises as fs } from 'fs';
+import path from 'path';
 
 import Aedes from 'aedes'
 import { createServer } from 'net'
@@ -12,8 +13,12 @@ import { createServer } from 'net'
 //let pathGambar = "/home/oem/abadipos/abadipos50/static/public/"
 //let pathGambar = "/home/oem/abadipos/abadipos50/build/client/public/"
 
-//lesehanpundong
-let pathGambar = "/home/abadinet/abadipos//abadipos50/build/client/public/"
+
+//let pathGambar = "/Images/"
+//development
+//const pathGambar = path.resolve('/home/oem/abadipos/abadipos50/static/Images/'); // Folder uploads di root
+//production
+const pathGambar = path.resolve('/home/oem/abadipos/abadipos50/build/client/Images/'); // Folder uploads di root
 
 
 const uri = 'mongodb://localhost:27017';
@@ -36,6 +41,7 @@ let dataBahan;
 let dataKategori
 let transaksiJualCountNow = 0;
 let transaksiBeliCountNow = 0;
+let transaksiHutangCountNow = 0;
 let dta;
 
 let dataTransaksiJualOpen
@@ -277,7 +283,7 @@ process.nextTick(function () {
 	loadPelanggan();
 	loadSuplier();
 	loadKategori();
-	loadTransaksiJualCount();
+	loadTransaksiCount();
 	//loadTransaksiJualOpen();
 })
 
@@ -319,14 +325,14 @@ ioServer.on("connection", (socket) => {
 		//ioServer.emit('myTransaksiJualCount', transaksiJualCountNow);
 		ioServer.emit('myTransaksiBeliCount', transaksiBeliCountNow);
 	} else {
-		loadTransaksiJualCount()
+		loadTransaksiCount()
 	}
 
 	if (transaksiJualCountNow > 0) {
-		//ioServer.emit('myTransaksiJualCount', transaksiJualCountNow);
-		ioServer.emit('myTransaksiBeliCount', transaksiBeliCountNow);
+		ioServer.emit('myTransaksiJualCount', transaksiJualCountNow);
+		//ioServer.emit('myTransaksiBeliCount', transaksiBeliCountNow);
 	} else {
-		loadTransaksiJualCount()
+		loadTransaksiCount()
 	}
 
 
@@ -341,13 +347,13 @@ ioServer.on("connection", (socket) => {
 		} else if (msg === 'getTransaksiJualOpen') {
 			loadTransaksiJualOpen();
 		} else if (msg === 'getTransaksiJualCount') {
-			loadTransaksiJualCount();
+			loadTransaksiCount();
 		} else if (msg === 'getBahan') {
 			loadBahan();
 		} else if (msg === 'getTransaksiBeli') {
 			loadTransaksiBeli();
 		} else if (msg === 'getTransaksiBeliCount') {
-			loadTransaksiBeliCount();
+			loadTransaksiCount();
 		} else if (msg === 'getSuplier') {
 			loadSuplier();
 		} else if (msg === 'getPelanggan') {
@@ -398,6 +404,10 @@ ioServer.on("connection", (socket) => {
 		loadHutang(msg);
 	});
 
+	socket.on('bayarHutang', (msg) => {
+		bayarHutang(msg);
+	});
+
 	socket.on('getLastWeekHutang', (msg) => {
 		loadLastWeekHutang(msg);
 	});
@@ -412,19 +422,7 @@ ioServer.on("connection", (socket) => {
 	})
 
 	socket.on("save_image", async (file, callback) => {
-		let gambarLok = pathGambar + file.name
-		let outResp = "-"
-		try {
-			const content = file.data0;
-			await fs.writeFile(gambarLok, file)
-			outResp = "Sukses"
-
-			return outResp
-		} catch (err) {
-			console.log(err);
-			outResp = "Gagal"
-			return outResp
-		}
+		simpanGambar(file)
 	});
 
 	socket.on('menu_upload', (fileData) => {
@@ -439,7 +437,7 @@ ioServer.on("connection", (socket) => {
 			console.log("default gambar")
 		}
 		//const fileBuffer = Buffer.from(fileData.data, 'base64');
-		if (fileData.newMenu === true) {
+		if (fileData.newMenu) {         
 			//bikin id baru
 			let nId = (parseInt(dataMenu[dataMenu.length - 1].id.slice(1, 3))) + 1;
 			let newId = "M"
@@ -449,11 +447,12 @@ ioServer.on("connection", (socket) => {
 			fileData.dataMenu.id = newId
 
 			simpanMenu(fileData.dataMenu)
-			console.log("simpan menu ", fileData.dataMenu)
+			//console.log("simpan menu ", fileData.dataMenu)
 		} else {
 			updateMenu(fileData.dataMenu)
 			console.log("update menu ", fileData.dataMenu)
 		}
+		//setTimeout(() =>{loadMenu()},3000)
 
 	})
 
@@ -558,18 +557,36 @@ async function simpanGambar(file) {
 	//path.resolve('/home/abadi/abadipos50/static',file.name)
 	//const dest = '/home/abadinet/abadipos50/static/' + file.name
 
-	let gambarLok = pathGambar + file.name
+	//let gambarLok = pathGambar + file.name
 	//let outResp = "-"
 	try {
 		const content = file.data0;
-		await fs.writeFile(gambarLok, content)
+		
+        if (!Buffer.isBuffer(content)) {
+            throw new Error("File data tidak valid (bukan buffer)");
+        }
+
+		const safeFileName = path.basename(file.name); // Hindari path traversal
+        const filePath = path.join(pathGambar, safeFileName);
+
+        // Pastikan folder "uploads" ada
+        await fs.mkdir(pathGambar, { recursive: true });
+
+		await fs.writeFile(filePath, content)
 		//outResp = "Sukses"
 		ioServer.emit("save_Status", "sukses")
+		console.log("Simpan gambar berhasil")
+
+		loadMenu()
+		loadBahan()
+		loadSuplier()
+		loadPelanggan()
 		//return outResp
 	} catch (err) {
 		console.log(err);
 		//outResp = "Gagal"
 		ioServer.emit("save_Status", "gagal")
+		console.log("Simpan gambar gagal")
 		//return outResp
 	}
 }
@@ -748,7 +765,7 @@ async function loadTransaksiBeli() {
 async function loadLastWeekHutang(suplier_Id) {
 	const timeNow = getTimeNow()
 	const lastWeek = getTimeLastWeek()
-	console.log('suplier: ' + suplier_Id + ' lastWeek: ' + lastWeek + ' Now: ' + timeNow)
+	//console.log('suplier: ' + suplier_Id + ' lastWeek: ' + lastWeek + ' Now: ' + timeNow)
 	
 	try {
 		// @ts-ignore
@@ -840,7 +857,7 @@ async function loadCloseTransaksiNow() {
 	}
 }
 
-async function loadTransaksiJualCount() {
+async function loadTransaksiCount() {
 	try {
 		// @ts-ignore
 		//const client = await clientPromise;
@@ -857,6 +874,7 @@ async function loadTransaksiJualCount() {
 			//console.log(dta.timeCode)			
 
 			if (tc !== dta[0].timeCode) {
+				/*
 				await db
 					.collection('transaksiCount')
 					.updateOne({ dayCount: "base" }, { $set: { transaksiBeliCount: 0 } });
@@ -866,22 +884,51 @@ async function loadTransaksiJualCount() {
 				await db
 					.collection('transaksiCount')
 					.updateOne({ dayCount: "base" }, { $set: { timeCode: tc } });
+					*/
+					await db
+					.collection('transaksiCount')
+					.updateOne({ dayCount: "base" }, { $set: { transaksiBeliCount: 0,transaksiJualCount: 0 ,transaksiHutangCount : 0,timeCode: tc} });
 				dta[0].transaksiJualCount = 0;
 				dta[0].transaksiBeliCount = 0;
+				dta[0].transaksiHutangCount = 0;
 				//console.log('reset transaksi count ' + tc);
 			}
 
 			transaksiJualCountNow = dta[0].transaksiJualCount + 1
 			transaksiBeliCountNow = dta[0].transaksiBeliCount + 1
+			transaksiHutangCountNow = dta[0].transaksiHutangCount + 1
 			//wa_order.id = bikinIdTransaksiWa();
 			ioServer.emit('myTransaksiJualCount', transaksiJualCountNow);
 			ioServer.emit('myTransaksiBeliCount', transaksiBeliCountNow);
+			ioServer.emit('myTransaksiHutangCount', transaksiHutangCountNow);
 			//console.log("transaksiJualCount now: ", transaksiJualCountNow)
 		}
 		//
 	} catch (err) {
 		console.log(err);
 	}
+}
+
+function bikinIdTransaksi(kode = 'J',count = 0) {
+    let tr = kode;
+    let temp = 0;
+    let tm = new Date();
+
+    tr += String(tm.getFullYear());
+    temp = tm.getMonth() + 1;
+    if (temp < 10) tr += '0';
+    tr += temp;
+
+    temp = tm.getDate();
+    if (temp < 10) tr += '0';
+    tr += temp;
+
+    if (count < 100) tr += '0';
+    if (count < 10) tr += '0';
+    tr += count;
+    //console.log(tr);
+
+    return tr;
 }
 
 async function loadTransaksiBeliCount() {
@@ -977,7 +1024,8 @@ async function simpanMenu(newData) {
 		const tes = await db.collection('dataMenu').insertOne(newData);
 
 		dataMenu = []
-		loadMenu()
+		//loadMenu()
+		console.log("simpan menu baru")
 
 	} catch (err) {
 		console.log(err);
@@ -993,8 +1041,9 @@ function setCharAt(str, index, chr) {
 async function simpanHutang(newData) {
 
 	//ganti id transaksi Bxxxxx ke Hxxxx
-	const newId = setCharAt(newData.id, 0, 'H')
-
+	const newId = bikinIdTransaksi('H',transaksiHutangCountNow)
+	const beliId = newData.id
+	
 	let lastHutangValue = 0
 	let newHutangValue = newData.totalTagihan - newData.totalBayar
 
@@ -1007,7 +1056,7 @@ async function simpanHutang(newData) {
 		.find({ suplierId: newData.suplierId, status: "last" })
 		.toArray();
 
-	console.log('lastHutang: ' + JSON.stringify(lastHt))
+	//console.log('lastHutang: ' + JSON.stringify(lastHt))
 	if (lastHt.length > 0) {
 		lastHutangValue = lastHt[0].newHutang
 		newHutangValue = lastHutangValue + (newData.totalTagihan - newData.totalBayar)
@@ -1033,22 +1082,23 @@ async function simpanHutang(newData) {
 			console.log(err);
 		}
 	}
-	let newBayar = {
+	const newBayar = {
 		userId: newData.userId,
 		waktu: newData.waktuBeli,
-		bayar: 0
+		bayar: newData.totalBayar
 	}
-	let itembayar = [];
-
-	if (newData.totalBayar !== 0) {
-		newBayar.bayar = newData.totalBayar
+	let itembayar = []
+	if(newData.Pembayaran >0){
+	itembayar.push(newData.Pembayaran,newBayar)
+	}else{
 		itembayar.push(newBayar)
-
 	}
 
+	//itembayar.push(newBayar)
 
 	let newHutang = {
 		id: newId,
+		transaksiBeliId:beliId,
 		suplierId: newData.suplierId,
 		suplierNama: newData.suplierNama,
 		suplier: newData.suplier,
@@ -1070,6 +1120,9 @@ async function simpanHutang(newData) {
 		//const collection = db.collection('dataTransaksijual')
 		// @ts-ignore
 		const tes = await db.collection('transaksiHutang').insertOne(newHutang);
+
+		simpanTransaksiHutangCount(transaksiHutangCountNow)
+
 	} catch (err) {
 		console.log(err);
 	}
@@ -1080,10 +1133,59 @@ async function simpanHutang(newData) {
 
 async function bayarHutang(data) {
 	/*
-	userId	
-	waktu
-	bayar
+	const ht = {
+				suplierId:$n_beli.suplierId,
+				userId:$n_beli.userId,
+				waktu:Date.now(),
+				bayar:totalBayar
+			}
 	*/
+	//get last hutang
+	const lastHt = await db
+		.collection('transaksiHutang')
+		.find({ suplierId: data.suplierId, status: "last" })
+		.toArray();
+
+		if(lastHt){
+			//console.log('lastHutang: ' + JSON.stringify(lastHt))
+			const newBayar = {
+				userId: data.userId,
+				waktu: data.waktu,
+				bayar: data.bayar
+			}
+			let itemBayar = [] 
+			for(let i = 0;i < lastHt[0].Pembayaran.length;i++){
+				itemBayar.push(lastHt[0].Pembayaran[i])
+			}
+			itemBayar.push(newBayar)
+			let t_bayar = lastHt[0].totalBayar + data.bayar
+			let new_ht = lastHt[0].newHutang - data.bayar
+
+			//console.log('id: ' + lastHt[0].id + ' itemBayar:' + JSON.stringify(itemBayar) + ' Total Bayar: ' + t_bayar + ' newhutang: ' + new_ht)
+
+			
+			try {
+				
+				const tes = await db.collection('transaksiHutang').updateOne(
+					{ id: lastHt[0].id },
+					{
+						$set: {
+							Pembayaran:itemBayar,
+							totalBayar:t_bayar,
+							newHutang:new_ht,							
+							
+						}
+					}
+				);
+				//console.log('status:' + JSON.stringify(tes))
+			} catch (err) {
+				console.log(err);
+			}
+
+		}
+
+		loadLastWeekHutang(data.suplierId)
+
 
 
 }
@@ -1217,7 +1319,7 @@ async function simpanTransaksiJualCount(count) {
 			.collection('transaksiCount')
 			.updateOne({ dayCount: 'base' }, { $set: { transaksiJualCount: count } });
 		//console.log('transaksi jual count: ' + count);
-		loadTransaksiJualCount();
+		loadTransaksiCount();
 		//
 	} catch (err) {
 		console.log(err);
@@ -1236,8 +1338,26 @@ async function simpanTransaksiBeliCount(count) {
 			.collection('transaksiCount')
 			.updateOne({ dayCount: 'base' }, { $set: { transaksiBeliCount: count } });
 		//console.log('transaksi Beli count: ' + count);
-		loadTransaksiBeliCount();
+		loadTransaksiCount();
 		////
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+async function simpanTransaksiHutangCount(count) {
+	try {
+		// @ts-ignore
+		//const client = await clientPromise;
+		//const db = client.db('abadipos');
+		//const collection = db.collection('dataTransaksijual')
+		// @ts-ignore
+		const tes = await db
+			.collection('transaksiCount')
+			.updateOne({ dayCount: 'base' }, { $set: { transaksiHutangCount: count } });
+		//console.log('transaksi jual count: ' + count);
+		loadTransaksiCount();
+		//
 	} catch (err) {
 		console.log(err);
 	}
